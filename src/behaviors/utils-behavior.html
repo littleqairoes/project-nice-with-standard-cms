@@ -1,0 +1,34 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<script>
+  (function(){
+    'use strict';
+
+    /** @polymerBehavior Polymer.UtilsBehavior */
+    Polymer.UtilsBehaviorImpl = {
+
+      properties: {
+        version: {
+          type: String,
+          readOnly: true,
+          value: function() { return this._version; }
+        }
+      },
+
+      get _version() {
+        return 'v2';
+      },
+
+      _catchError: function(error) {
+        console.log(error)
+        if (this.$.toaster) {
+          this.$.toaster.show('Error: ' + error.message);
+        } else {
+          alert('Error: ' + error.message);
+        }
+      },
+    };
+    Polymer.UtilsBehavior = [
+      Polymer.UtilsBehaviorImpl
+    ];
+  })();
+</script>

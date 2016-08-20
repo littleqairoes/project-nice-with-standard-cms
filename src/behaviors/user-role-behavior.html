@@ -1,0 +1,124 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/app-storage/app-network-status-behavior.html">
+<link rel="import" href="utils-behavior.html">
+
+<script>
+  (function(){
+    'use strict';
+
+    /** @polymerBehavior Polymer.UserRoleBehavior */
+    Polymer.UserRoleBehaviorImpl = {
+
+      properties: {
+        user: {
+          type: Object,
+          notify: true,
+          value: null
+        },
+        signedIn: {
+          type: Boolean,
+          notify: true,
+          value: false
+        },
+        roles: {
+          type: Object,
+          value: function() {
+            return {
+              admin: false,
+              editor: false,
+              staff: false,
+              member: false
+            };
+          }
+        },
+        userPath: {
+          type: Object,
+          readOnly: true,
+          value: function() { return this._userPath; }
+        },
+        userGroup: {
+          type: String,
+          readOnly: true,
+          value: function() { return this._userGroup; }
+        }
+      },
+
+      observers: [
+        '_setRole(adminRole, editorRole, staffRole, memberRole)'
+      ],
+
+      get _userGroup() {
+        return 'user_group';
+      },
+
+      get _userPath() {
+        var options = this._version + '/' + this._userGroup + '/roles';
+        // var options = `${this._version}/${this._userGroup}/roles`;
+        return {
+          // profiles: `${this._version}/${this._userGroup}/profiles`,
+          // options: {
+          //   admin: `${options}/admin`,
+          //   editor: `${options}/editor`,
+          //   staff: `${options}/staff`,
+          //   member: `${options}/member`
+          // }
+          profiles: this._version + '/' + this._userGroup + '/profiles',
+          options: {
+            admin: options + '/admin',
+            editor: options + '/editor',
+            staff: options + '/staff',
+            member: options + '/member'
+          }
+        };
+      },
+
+      _forceZero: function(a, zeroValue) {
+        if (zeroValue === null || zeroValue === undefined) zeroValue = false;
+        return typeof a === 'object' && this._isEmpty(a) ? zeroValue : a;
+      },
+
+      _isEmpty: function(obj) {
+        for(var prop in obj) {
+          if(obj.hasOwnProperty(prop))
+            return false;
+        }
+
+        return JSON.stringify(obj) === JSON.stringify({});
+      },
+
+      _setRole: function(a, e, s, m) {
+        var a1 = a && a.value;
+        var e1 = e && e.value;
+        var s1 = s && s.value;
+        var m1 = m && m.value;
+
+        this.set('roles.admin', a1);
+        this.set('roles.editor', e1 || a1);
+        this.set('roles.staff', s1 || e1 || a1);
+        this.set('roles.member', m1 || s1 || e1 || a1);
+      },
+
+      signIn: function() {
+        this.$.auth.signInWithPopup().then(function(result) {
+          // this.$.toaster.show(`Welcome ${result.user.displayName}!`);
+          this.$.toaster.show('Welcome ' + result.user.displayName + '!');
+        }.bind(this)).catch(this._catchError.bind(this));
+      },
+
+      signOut: function() {
+        if (this.$.auth) {
+          this.$.auth.signOut().then(function() {
+            this.$.toaster.show('Goodbye!');
+          }.bind(this)).catch(this._catchError.bind(this));
+        } else {
+          this.$.toaster.show('You are already logged out.');
+        }
+      },
+    };
+    Polymer.UserRoleBehavior = [
+      Polymer.AppNetworkStatusBehavior,
+      Polymer.UtilsBehavior,
+      Polymer.UserRoleBehaviorImpl
+    ];
+  })();
+</script>

@@ -1,0 +1,112 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-location.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-app.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="behaviors/user-role-behavior.html">
+
+<dom-module id="nice-app">
+  <template>
+
+    <app-location route="{{route}}"></app-location>
+    <app-route
+      route="{{route}}"
+      pattern="/:page"
+      data="{{routeData}}"
+      tail="{{subroute}}"></app-route>
+
+    <firebase-app
+      api-key="AIzaSyBzGu9Aq0wiRaZ1IzXnDFw-h1nr4hW86yI"
+      auth-domain="project-nice-polymer.firebaseapp.com"
+      database-url="https://project-nice-polymer.firebaseio.com"
+      storage-bucket="project-nice-polymer.appspot.com">
+    </firebase-app>
+
+    <firebase-auth
+      id="auth"
+      provider="google"
+      signed-in="{{signedIn}}"
+      user="{{user}}">
+    </firebase-auth>
+
+    <!-- ADD CHECK ON USER ROLE HERE -->
+    <template is="dom-if" if="{{user}}">
+      <firebase-document
+        id="user-admin-ref"
+        path="[[userPath.options.admin]]/[[user.uid]]"
+        data="{{adminRole}}">
+      </firebase-document>
+
+      <firebase-document
+        id="user-editor-ref"
+        path="[[userPath.options.editor]]/[[user.uid]]"
+        data="{{editorRole}}">
+      </firebase-document>
+
+      <firebase-document
+        id="user-staff-ref"
+        path="[[userPath.options.staff]]/[[user.uid]]"
+        data="{{staffRole}}">
+      </firebase-document>
+
+      <firebase-document
+        id="user-member-ref"
+        path="[[userPath.options.member]]/[[user.uid]]"
+        data="{{memberRole}}">
+      </firebase-document>
+    </template>
+
+    <paper-toast id="toaster"></paper-toast>
+  </template>
+
+
+  <script>
+    Polymer({
+
+      is: 'nice-app',
+
+      properties: {
+
+        page: {
+          type: String,
+          reflectToAttribute: true,
+          observer: '_pageChanged'
+        },
+        routeData: {
+          type: Object
+        },
+        subroute: {
+          type: Object
+        },
+        signedIn: {
+          type: Boolean
+        },
+        user: {
+          type: Object
+        },
+
+      },
+
+      behaviors: [
+        Polymer.UserRoleBehavior
+      ],
+
+      observers: [
+        '_routePageChanged(routeData.page)'
+      ],
+
+      _routePageChanged: function(page) {
+        this.page = page || 'home';
+      },
+
+      _pageChanged: function(page) {
+        // load page import on demand.
+        this.importHref(
+          this.resolveUrl('pages/' + page + '.html'), null, null, true);
+      }
+
+    });
+  </script>
+</dom-module>

@@ -1,6 +1,6 @@
 {
   "entrypoint": "index.html",
-  "shell": "src/nice.html",
+  "shell": "src/nice-app.html",
   "fragments": [
 
   ]
