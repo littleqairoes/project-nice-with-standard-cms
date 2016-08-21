@@ -1,0 +1,36 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../components/tiles-component.html">
+<link rel="import" href="../components/home-page-articles-component.html">
+
+<link rel="import" href="../behaviors/user-role-behavior.html">
+
+<dom-module id="home-page">
+  <template>
+
+    <tiles-component
+      roles="[[roles]]"
+      user="[[user]]">
+    </tiles-component>
+
+    <home-page-articles-component
+      roles="[[roles]]"
+      user="[[user]]">
+    </home-page-articles-component>
+
+  </template>
+  <script>
+    Polymer({
+
+      is: 'home-page',
+
+      properties: {
+      },
+
+      behaviors: [
+        Polymer.UserRoleBehavior
+      ]
+
+    });
+  </script>
+</dom-module>

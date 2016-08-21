@@ -1,0 +1,48 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../behaviors/user-role-behavior.html">
+
+<link rel="import" href="article-list-component.html">
+
+<dom-module id="home-page-articles-component">
+  <template>
+
+    <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors">
+
+    </style>
+
+    <div class="horizontal layout">
+      <div class="flex"></div>
+      <article-list-component
+        class="flex-4"
+        limit="5"
+        roles="[[roles]]"
+        user="{{user}}">
+      </article-list-component>
+      <div class="flex"></div>
+    </div>
+
+
+
+  </template>
+  <script>
+    Polymer({
+
+      is: 'home-page-articles-component',
+
+      properties: {
+        articles: {
+          type: Object
+        }
+      },
+
+      behaviors: [
+        Polymer.UserRoleBehavior
+      ]
+
+    });
+  </script>
+</dom-module>

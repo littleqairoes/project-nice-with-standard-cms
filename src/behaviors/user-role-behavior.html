@@ -31,6 +31,9 @@
             };
           }
         },
+        owner: {
+          type: Object
+        },
         userPath: {
           type: Object,
           readOnly: true,
@@ -40,7 +43,7 @@
           type: String,
           readOnly: true,
           value: function() { return this._userGroup; }
-        }
+        },
       },
 
       observers: [
@@ -72,18 +75,17 @@
         };
       },
 
-      _forceZero: function(a, zeroValue) {
-        if (zeroValue === null || zeroValue === undefined) zeroValue = false;
-        return typeof a === 'object' && this._isEmpty(a) ? zeroValue : a;
+      checkPermission: function(r) {
+        var u = this.user;
+        var o = this.online;
+        return u && u.uid && o && r;
       },
 
-      _isEmpty: function(obj) {
-        for(var prop in obj) {
-          if(obj.hasOwnProperty(prop))
-            return false;
-        }
-
-        return JSON.stringify(obj) === JSON.stringify({});
+      checkPermissionWithOwner: function(r, owner) {
+        var u = this.user;
+        var o = this.online;
+        return u && u.uid && o && (r || (owner.owner === u.uid));
+        // return ((r || o) || (u && owner && owner.owner === u.uid)) && (u && u.uid) && s;
       },
 
       _setRole: function(a, e, s, m) {

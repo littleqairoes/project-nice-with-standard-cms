@@ -1,0 +1,69 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-query.html">
+
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../behaviors/article-behavior.html">
+<link rel="import" href="../behaviors/user-role-behavior.html">
+
+<link rel="import" href="article-item-component.html">
+
+<dom-module id="article-list-component">
+  <template>
+
+    <style>
+      :host .title {
+        padding-left: 1em;
+        padding-right: 1em;
+      }
+
+      :host .title h1 {
+        font-size: 2em;
+      }
+    </style>
+
+    <firebase-query
+      id="article-query"
+      path="[[articlePath.options.published]]"
+      data="{{articles}}"
+      order-by-child="value"
+      limit-to-first="[[limit]]">
+    </firebase-query>
+
+    <div class="title">
+      <h1>Articles</h1>
+    </div>
+
+    <template is="dom-repeat" items="{{articles}}">
+      <article-item-component
+        article-id="{{item.$key}}"
+        publish-date="{{item.value}}"
+        roles="[[roles]]"
+        user="{{user}}">
+      </article-item-component>
+    </template>
+
+  </template>
+  <script>
+    Polymer({
+
+      is: 'article-list-component',
+
+      properties: {
+        articles: {
+          type: Object
+        },
+        limit: {
+          type: Number
+        }
+      },
+
+      behaviors: [
+        Polymer.ArticleBehavior,
+        Polymer.UserRoleBehavior
+      ]
+
+    });
+  </script>
+</dom-module>

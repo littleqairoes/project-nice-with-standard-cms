@@ -1,0 +1,108 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="utils-behavior.html">
+<script>
+  (function(){
+    'use strict';
+
+    /** @polymerBehavior Polymer.ArticleBehavior */
+    Polymer.ArticleBehaviorImpl = {
+
+      properties: {
+        article: {
+          type: Object
+        },
+
+        articleId: {
+          type: String
+        },
+
+        articlePath: {
+          type: Object,
+          readOnly: true,
+          value: function() { return this._articlePath; }
+        },
+
+        articleGroup: {
+          type: String,
+          readOnly: true,
+          // reflectToAttribute: true,
+          value: function() { return this._articleGroup; }
+        }
+      },
+
+      get _articleGroup() {
+        return 'article_group';
+      },
+
+      get _articlePath() {
+        var options = this._version + '/' + this._articleGroup + '/options';
+        return {
+          articles: this._version + '/' + this._articleGroup + '/articles',
+          owners: this._version + '/' + this._articleGroup + '/owners',
+          options: {
+            published: options + '/published',
+            draft: options + '/draft'
+          }
+        };
+      },
+
+      // _gotoArticle: function(pageId = '', action, name = 'New Window') {
+      //   this._gotoPage('article-page', pageId, action, name);
+      // },
+
+      // _insertNewArticle: function(sluggedTitle, e) {
+      //   if (
+      //     sluggedTitle &&
+      //     typeof sluggedTitle === 'string' &&
+      //     sluggedTitle.trim().length >= 0 &&
+      //     this.checkPermission(this.roles.staff, this.user, this.online, this.signedIn) &&
+      //     this.$$('#create-new-title').value &&
+      //     this.$$('#create-new-title').value.trim().length >= 0
+      //   ) {
+      //     this.$$('#data-ref').setStoredValue(`${this.articlePath.articles}/${sluggedTitle}`, {
+      //       title: this.$$('#create-new-title').value,
+      //       date_created: this._todayUTC
+      //     }).then(function(){
+      //       this._setOption(this.articlePath.options.draft, sluggedTitle, this._todayUTC).then(function() {
+      //         this._setOwner(this.articlePath.owners, sluggedTitle).then(function() {
+      //           this.$.toaster.show('Creating a new Article');
+      //           this.$$('#create-new-fab').removeAttribute('disabled');
+      //           this.$$('#create-new-title').value = '';
+      //           this._gotoArticle(sluggedTitle, 'edit', `New Article: ${this.$$('#create-new-title').value}`);
+      //         }.bind(this)).catch(this._catchError.bind(this));
+      //       }.bind(this)).catch(this._catchError.bind(this));
+      //     }.bind(this)).catch(this._catchError.bind(this));
+      //   } else {
+      //     this._catchError(new Error('Error: cannot create new article'));
+      //   }
+      // },
+
+      // _deleteArticle: function() {
+      //   if (this.articleId) {
+      //     this.$$('#data-ref').destroy().then(function(){
+      //       this.$$('#owner-ref').destroy().then(function(){
+      //         this.$$('#options-ref').path = `${this.articlePath.options.draft}/${this.articleId}`;
+      //         this.$$('#options-ref').destroy().then(function(){
+      //           this.$$('#options-ref').path = `${this.articlePath.options.published}/${this.articleId}`;
+      //           this.$$('#options-ref').destroy().then(function(){
+      //             this.$$('#options-ref').path = `${this.articlePath.options.front}/${this.articleId}`;
+      //             this.$$('#options-ref').destroy().then(function(){
+      //               this.$.toaster.show('Article successfully deleted');
+      //               window.location.href = '/article-page/';
+      //               // this._gotoPage('article-page');
+      //             }.bind(this)).catch(this._catchError.bind(this));
+      //           }.bind(this)).catch(this._catchError.bind(this));
+      //         }.bind(this)).catch(this._catchError.bind(this));
+      //       }.bind(this)).catch(this._catchError.bind(this));
+      //     }.bind(this)).catch(this._catchError.bind(this));
+      //   } else {
+      //     this.$.toaster.show('The article id to be deleted is undefined');
+      //   }
+      // }
+    };
+    Polymer.ArticleBehavior = [
+      Polymer.UtilsBehavior,
+      Polymer.ArticleBehaviorImpl
+    ];
+  })();
+</script>

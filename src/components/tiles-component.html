@@ -1,0 +1,125 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-query.html">
+
+<link rel="import" href="article-tile-component.html">
+
+<link rel="import" href="../behaviors/article-behavior.html">
+<link rel="import" href="../behaviors/user-role-behavior.html">
+
+<dom-module id="tiles-component">
+  <template>
+
+    <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors">
+      :host {
+        display: block;
+      }
+
+      :host .tiler{
+        position: relative;
+        overflow: hidden;
+        height: 750px;
+        @apply(--layout-wrap);
+      }
+
+      :host .tile {
+        display: inline-block;
+        height: calc(100% / 3);
+        float: left;
+        vertical-align: top;
+        min-width: 300px;
+        /*@apply(--paper-font-title);*/
+      }
+
+      @media only screen and (min-width: 900px) {
+        :host .tile {
+          width: calc(100% / 3)
+        }
+
+        :host .tile:nth-of-type(6) {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+        }
+
+        :host .tile:nth-of-type(7) {
+          position: absolute;
+          bottom: 0;
+          left: calc(100% / 3);
+        }
+
+        :host .tile:nth-of-type(1), :host .tile:nth-of-type(5){
+          height: calc(100% / 3 * 2);
+        }
+      }
+
+      @media only screen and (min-width: 600px) and (max-width: 900px) {
+        :host .tile {
+          width: calc(100% / 2);
+        }
+
+        :host .tile:nth-of-type(1), :host .tile:nth-of-type(4){
+          height: calc(100% / 3 * 2);
+        }
+
+        :host .tile:nth-of-type(3) {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+        }
+      }
+
+      @media only screen and (max-width: 600px) {
+        :host .tile {
+          width: 100%
+        }
+      }
+
+      :host .tile article-tile-component {
+        height: 100%;
+      }
+
+    </style>
+
+    <firebase-query
+      id="article-query"
+      path="[[articlePath.options.published]]"
+      data="{{frontArticles}}"
+      order-by-child="front"
+      limit-to-first="7">
+    </firebase-query>
+
+    <div class="tiler">
+      <template is="dom-repeat" items="[[frontArticles]]">
+        <div class="tile">
+          <article-tile-component
+            article-id="[[item.$key]]"
+            publish-date="[[item.value]]"
+            user="{{user}}"
+            roles="[[roles]]">
+          </article-tile-component>
+        </div>
+      </template>
+    </div>
+
+  </template>
+  <script>
+    Polymer({
+
+      is: 'tiles-component',
+
+      properties: {
+        frontArticles: {
+          type: Object
+        }
+      },
+
+      behaviors: [
+        Polymer.ArticleBehavior,
+        Polymer.UserRoleBehavior
+      ]
+
+    });
+  </script>
+</dom-module>

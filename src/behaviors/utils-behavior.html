@@ -18,6 +18,29 @@
         return 'v2';
       },
 
+      _forceZero: function(a, zeroValue) {
+        if (zeroValue === null || zeroValue === undefined) zeroValue = false;
+        return typeof a === 'object' && this._isEmpty(a) ? zeroValue : a;
+      },
+
+      _isEmpty: function(obj) {
+        for(var prop in obj) {
+          if(obj.hasOwnProperty(prop))
+            return false;
+        }
+
+        return JSON.stringify(obj) === JSON.stringify({});
+      },
+
+      renderDate: function(d) {
+        var date = d;
+        if (typeof d === 'object' && d.value) {
+          date = d.value;
+        }
+        var nd = new Date(date)
+        return nd.toLocaleDateString() + ' - ' + nd.toLocaleTimeString();
+      },
+
       _catchError: function(error) {
         console.log(error)
         if (this.$.toaster) {
