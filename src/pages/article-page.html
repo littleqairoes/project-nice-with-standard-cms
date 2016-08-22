@@ -1,0 +1,149 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../../bower_components/app-route/app-route.html">
+<link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
+
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+
+<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
+
+<link rel="import" href="../../bower_components/neon-animation/animations/scale-up-animation.html">
+<link rel="import" href="../../bower_components/neon-animation/animations/fade-out-animation.html">
+
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+
+<link rel="import" href="../behaviors/user-role-behavior.html">
+<link rel="import" href="../behaviors/article-behavior.html">
+
+<dom-module id="article-page">
+  <template>
+
+    <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors">
+      paper-fab {
+        position: fixed;
+        bottom: 2em;
+        right: 2em;
+      }
+
+      paper-fab.label {
+        font-size: 20px;
+      }
+
+      paper-dialog {
+        width: 70%;
+      }
+    </style>
+
+    <app-route
+      route="{{route}}"
+      pattern="/:pageId"
+      data="{{routeData}}"
+      tail="{{subroute}}">
+    </app-route>
+
+    <iron-pages
+      role="main"
+      selected="[[subpage]]"
+      attr-for-selected="name">
+      <article-all-component
+        name="all"
+        route="{{subroute}}"
+        roles="[[roles]]"
+        user="{{user}}"
+        scroll-target="[[scrollTarget]]">
+      </article-all-component>
+      <article-view-component
+        name="view"
+        article-id="[[pageId]]"
+        route="{{subroute}}"
+        roles="[[roles]]"
+        user="{{user}}"
+        scroll-target="[[scrollTarget]]">
+      </article-view-component>
+    </iron-pages>
+
+    <template is="dom-if" if="{{checkPermission(roles.staff)}}">
+      <paper-fab
+        id="create-new-fab"
+        icon="add"
+        on-tap="openCreateNewDialog"
+        disabled="[[!online]]"
+        aria-label="Add Article">
+      </paper-fab>
+
+      <paper-dialog
+        id="create-new-dialog"
+        entry-animation="scale-up-animation"
+        exit-animation="fade-out-animation">
+        <h2>New Article</h2>
+        <div>
+          <paper-input
+            id="create-new-title"
+            name="title"
+            minlength="1"
+            label="Please input Title">
+          </paper-input>
+        </div>
+        <div class="buttons">
+          <paper-button dialog-dismiss>
+            Cancel
+          </paper-button>
+          <paper-button on-tap="insertNew" dialog-confirm>
+            Create New
+          </paper-button>
+        </div>
+      </paper-dialog>
+    </template>
+
+    <paper-toast id="toaster"></paper-toast>
+  </template>
+  <script>
+    Polymer({
+
+      is: 'article-page',
+
+      properties: {
+        subpage: {
+          type: String,
+          reflectToAttribute: true,
+          observer: '_pageChanged'
+        },
+        pageId: {
+          type: String,
+          observer: '_checkIdExists'
+        },
+        scrollTarget: {
+          type: Object
+        }
+      },
+
+      behaviors: [
+        Polymer.UserRoleBehavior,
+        Polymer.ArticleBehavior
+      ],
+
+      observers: [
+        '_routePageIdChanged(routeData.pageId)'
+      ],
+
+      _routePageIdChanged: function(id) {
+        this.pageId = id;
+      },
+
+      _checkIdExists: function(id) {
+        this.subpage = id && id.length != 0 ? 'view' : 'all';
+      },
+
+      _pageChanged: function(page) {
+        this.importHref(
+          this.resolveUrl(`../components/article-${page}-component.html`), null, null, true);
+      }
+
+
+
+    });
+  </script>
+</dom-module>

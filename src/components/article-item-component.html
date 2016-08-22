@@ -58,6 +58,10 @@
       :host .sub-title {
         font-size: 0.8em;
       }
+
+      :host .buttons {
+        padding-top: 1em;
+      }
     </style>
 
     <firebase-document
@@ -71,7 +75,7 @@
       data="{{owner}}">
     </firebase-document>
 
-    <paper-material>
+    <paper-material style="margin-bottom: 5px">
       <div class="article-item horizontal layout wrap">
         <div class="article-banner flex">
           <iron-image
@@ -95,7 +99,7 @@
           </div>
           <div class="buttons">
             <a href$="/article-page/[[articleId]]/view">
-              <paper-button>
+              <paper-button raised>
                 Read More...
               </paper-button>
             </a>

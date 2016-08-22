@@ -18,6 +18,10 @@
         return 'v2';
       },
 
+      get _todayUTC() {
+        return firebase ? firebase.database.ServerValue.TIMESTAMP : Date.now();
+      },
+
       _forceZero: function(a, zeroValue) {
         if (zeroValue === null || zeroValue === undefined) zeroValue = false;
         return typeof a === 'object' && this._isEmpty(a) ? zeroValue : a;
@@ -39,6 +43,14 @@
         }
         var nd = new Date(date)
         return nd.toLocaleDateString() + ' - ' + nd.toLocaleTimeString();
+      },
+
+      openCreateNewDialog: function() {
+        if (this.$$('#create-new-dialog')) {
+          this.$$('#create-new-dialog').open();
+        } else {
+          this.$.toaster.show('Error: No dialog box exists. Please report to us for this bug');
+        }
       },
 
       _catchError: function(error) {

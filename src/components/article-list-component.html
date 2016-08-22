@@ -4,6 +4,9 @@
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
+<link rel="import" href="../../bower_components/iron-scroll-threshold/iron-scroll-threshold.html">
+<link rel="import" href="../../bower_components/iron-list/iron-list.html">
+
 <link rel="import" href="../behaviors/article-behavior.html">
 <link rel="import" href="../behaviors/user-role-behavior.html">
 
@@ -35,14 +38,23 @@
       <h1>Articles</h1>
     </div>
 
-    <template is="dom-repeat" items="{{articles}}">
-      <article-item-component
-        article-id="{{item.$key}}"
-        publish-date="{{item.value}}"
-        roles="[[roles]]"
-        user="{{user}}">
-      </article-item-component>
-    </template>
+    <iron-list id="list" items="[]" as="item" scroll-target="[[scrollTarget]]">
+      <template>
+        <article-item-component
+          article-id$="{{item.$key}}"
+          publish-date$="{{item.value}}"
+          roles="[[roles]]"
+          user="{{user}}">
+        </article-item-component>
+      </template>
+    </iron-list>
+
+    <iron-scroll-threshold
+      id="scroller"
+      on-lower-trigger="loadMoreData"
+      lower-threshold="100"
+      scroll-target="[[scrollTarget]]">
+    </iron-scroll-threshold>
 
   </template>
   <script>
@@ -56,13 +68,51 @@
         },
         limit: {
           type: Number
+        },
+        startLimit: {
+          type: Number,
+          value: 0
+        },
+        loadMore: {
+          type: Boolean
+        },
+        scrollTarget: {
+          type: Object
         }
       },
 
       behaviors: [
         Polymer.ArticleBehavior,
         Polymer.UserRoleBehavior
-      ]
+      ],
+
+      observers: [
+        'addToList(articles.splices)'
+      ],
+
+      addToList: function(e) {
+        // console.log(this.articles)
+        for (var i in this.articles) {
+          var flag = true;
+          for (var j in this.$.list.items) {
+            if (this.$.list.items[j].$key === this.articles[i].$key) {
+              flag = false;
+              break;
+            }
+          }
+          if (flag) {
+            this.$.list.push('items', this.articles[i])
+          }
+        }
+      },
+
+      ready: function() {
+        this.$.scroller.setup();
+      },
+
+      loadMoreData: function() {
+        this.limit = this.limit + 10;
+      }
 
     });
   </script>

@@ -28,6 +28,8 @@
 <link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
 
+<link rel="import" href="../bower_components/iron-scroll-threshold/iron-scroll-threshold.html">
+
 <link rel="import" href="behaviors/user-role-behavior.html">
 
 <dom-module id="nice-app">
@@ -116,6 +118,7 @@
       query="[[_computeMediaQuery()]]"
       on-query-matches-changed="_onQueryMatchesChanged"></iron-media-query>
 
+
     <app-drawer-layout force-narrow fullbleed id="main-app-drawer-layout">
       <!-- Drawer content -->
       <app-drawer>
@@ -132,9 +135,9 @@
       </app-drawer>
 
       <!-- Main content -->
-      <app-header-layout has-scrolling-region>
 
-        <app-header condenses reveals effects="waterfall">
+      <app-header-layout has-scrolling-region id="layout">
+        <app-header condenses reveals effects="waterfall" id="header">
           <app-toolbar>
             <paper-icon-button icon="menu" drawer-toggle class$="{{showMenuButton}}"></paper-icon-button>
             <img src="{{appLogo}}" class="app-logo">
@@ -175,15 +178,25 @@
         <iron-pages role="main" selected="[[page]]" attr-for-selected="name">
           <home-page
             name="home-page"
-            route="[[subroute]]"
-            page="[[page]]"
+            route="{{subroute}}"
             user="{{user}}"
             roles="[[roles]]"
             signed-in="[[signedIn]]">
           </home-page>
+          <article-page
+            name="article-page"
+            route="{{subroute}}"
+            user="{{user}}"
+            roles="[[roles]]"
+            signed-in="[[signedIn]]"
+            scroll-target="[[_getScrollTarget()]]">
+          </article-page>
         </iron-pages>
+
       </app-header-layout>
     </app-drawer-layout>
+
+
 
     <paper-toast id="toaster"></paper-toast>
   </template>
@@ -317,6 +330,10 @@
       checkMenu: function(item, user) {
         return !item.auth || user;
       },
+
+      _getScrollTarget: function() {
+        return this.$.layout.shadowRoot.querySelector('#contentContainer');
+      }
 
     });
   </script>
