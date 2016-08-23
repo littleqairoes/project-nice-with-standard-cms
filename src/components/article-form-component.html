@@ -25,6 +25,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../behaviors/utils-behavior.html">
 <link rel="import" href="../behaviors/user-role-behavior.html">
 <link rel="import" href="../behaviors/file-behavior.html">
+<link rel="import" href="../behaviors/category-behavior.html">
 <link rel="import" href="../behaviors/article-behavior.html">
 
 <script src="../../bower_components/underscore/underscore.js"></script>
@@ -175,7 +176,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           </paper-textarea>
           <hr/>
           <div class="photoblog-album">
-            Photoblog Album:
+            Photoblog Album:<br/>
             <input
               id="photoblog-file-upload"
               name="photoblogFileUpload"
@@ -215,6 +216,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               <paper-icon-button data-index$="{{item.$key}}" data-path$="{{item.fullPath}}" icon="icons:delete" on-tap="_deletePhotoblogFile" raised></paper-icon-button>
             </div>
           </template>
+          <paper-input
+            id="tag-words"
+            name="tag-words"
+            label="Tags"
+            value="{{tagWords}}"
+            on-change="_tagChange"
+            >
+          </paper-input>
           <div class="horizontal layout" style="padding: 10px">
             <span style="padding-right: 10px">
               Publish:
@@ -258,6 +267,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
         photoBlogUploads: {
           type: Object
+        },
+        tagWords: {
+          type: String
         }
       },
 
@@ -266,13 +278,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         '_checkFront(publishOption.front)',
         '_checkHeaderImageUpload(headerImage.splices)',
         '_checkPhotoBlogUploads(photoBlogUploads.splices)',
-        '_checkArticle(article.*)'
+        '_checkArticle(article.*)',
+        '_checkTags(article.tagwords)'
       ],
 
       behaviors: [
         Polymer.UtilsBehavior,
         Polymer.UserRoleBehavior,
         Polymer.FileBehavior,
+        Polymer.CategoryBehavior,
         Polymer.ArticleBehavior,
       ],
 
@@ -285,7 +299,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _setDatePublished: _.debounce(function() {
         if (this.$$('#data-ref')) {
           var updates = {};
-          console.log(this.$$('#data-ref').path );
+          // console.log(this.$$('#data-ref').path );
           updates[this.$$('#data-ref').path + '/date_published'] = this._todayUTC
           firebase.database().ref().update(updates).catch(this._catchError.bind(this));
         }
@@ -298,6 +312,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       _checkFront: function(o) {
+
         if (this.$$('#front')) {
           this.$$('#front').checked = this._forceZero(o, false);
         }
@@ -415,8 +430,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           obj.photoblog = photoblog
         }
 
-        if (this.$.front.checked) {
-          obj.front = this._todayUTC
+        if (this.$$('#front').checked) {
+          obj.front = this._todayUTC;
         }
 
         var updates = {}
@@ -436,68 +451,59 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             this.$.toaster.show(message);
           }.bind(this)).catch(this._catchError.bind(this))
         }
+      },
+
+      onFrontPublish: function(e) {
+        var checked = e.target.checked;
+
+        if (checked) {
+          this.$$('#publish').checked = true;
+          this.onPublish({
+            target: this.$$('#publish')
+          })
+        } else {
+          firebase.database().ref(this.$$('#published-ref').path + '/front').remove()
+        }
+      },
+
+      _checkTags: function(e) {
+        var arr = [];
+        if (e) {
+          for (var i in e) {
+            arr.push(e[i]);
+          }
+          this.tagWords = arr.join(', ');
+        }
+      },
+
+      _tagChange: function(e) {
+        var arr = e.target.value.split(',');
+        var newArr = [];
+        for (var i in arr) {
+          var word = arr[i].trim().toLowerCase();
+
+          if (word && word.trim && word.trim().length > 0) {
+            var key = word.replace(/\#|\.|\$|\[|\]/g, '_');
+            newArr.push(word);
+            firebase.database().ref(this.articlePath.tagWords + '/' + key + '/' + this.articleId).set({
+              value: this._todayUTC
+            }).catch(this._catchError.bind(this));
+          }
+        }
+
+        var delArr = _.difference(this.article.tagwords, newArr);
+
+        for (var j in delArr) {
+          var key = delArr[j].replace(/\#|\.|\$|\[|\]/g, '_');
+          firebase.database().ref(this.articlePath.tagWords + '/' + key + '/' + this.articleId)
+            .remove().catch(this._catchError.bind(this));
+        }
+
+        var updates = {};
+        // console.log(this.$$('#data-ref').path );
+        updates[this.$$('#data-ref').path + '/tagwords'] = newArr;
+        firebase.database().ref().update(updates).catch(this._catchError.bind(this));
       }
-
-      // onPublish(e) {
-      //   var message = e.target.checked ? 'Published' : 'Not Published';
-      //   var checked = e.target.checked;
-      //   this._setOption(
-      //     this.articlePath.options.draft,
-      //     this.articleId,
-      //     !checked ? this._todayUTC : null,
-      //     '#draft-ref'
-      //   ).then(function(){
-      //     if (!checked) {
-      //       this._setOption(
-      //         this.articlePath.options.front,
-      //         this.articleId,
-      //         null,
-      //         '#front-ref'
-      //       ).catch(this._catchError.bind(this));
-      //     }
-      //     this._setOption(
-      //       this.articlePath.options.published,
-      //       this.articleId,
-      //       checked ? this._todayUTC : null,
-      //       '#published-ref'
-      //     ).then(function(){
-      //       e.target.checked = checked;
-      //       this.$.toaster.hide();
-      //       this.$.toaster.show(message);
-      //     }.bind(this)).catch(this._catchError.bind(this));
-      //   }.bind(this)).catch(this._catchError.bind(this));
-      // },
-
-      // onFrontPublish(e) {
-      //   var message = e.target.checked ? 'Published at Header' : 'Removed at Header';
-      //   var checked = e.target.checked;
-      //   if (checked) {
-      //     this._setOption(
-      //       this.articlePath.options.draft,
-      //       this.articleId,
-      //       null,
-      //       '#draft-ref'
-      //     ).catch(this._catchError.bind(this));
-      //     this._setOption(
-      //       this.articlePath.options.published,
-      //       this.articleId,
-      //       this._todayUTC,
-      //       '#published-ref'
-      //     ).catch(this._catchError.bind(this));
-      //   }
-      //   this._setOption(
-      //     this.articlePath.options.front,
-      //     this.articleId,
-      //     checked ? this._todayUTC : null,
-      //     '#front-ref'
-      //   ).then(function(){
-      //     e.target.checked = checked;
-      //     this.$.toaster.hide();
-      //     this.$.toaster.show(message);
-      //   }.bind(this)).catch(this._catchError.bind(this));
-      // },
-
-
 
     });
 
