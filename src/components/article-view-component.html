@@ -9,7 +9,8 @@
 <link rel="import" href="../behaviors/article-behavior.html">
 <link rel="import" href="../behaviors/user-role-behavior.html">
 
-<link rel="import" href="article-component.html">
+<link rel="import" href="article-body-component.html">
+<link rel="import" href="article-form-component.html">
 
 <dom-module id="article-view-component">
   <template>
@@ -26,24 +27,22 @@
     </app-route>
 
     <div class="layout horizontal wrap">
-      <!--<template is="dom-if" if="{{_checkAction(action)}}">-->
-      <!--  <article-form-organism-->
-      <!--    article-id="[[articleId]]"-->
-      <!--    roles="[[roles]]"-->
-      <!--    signed-in="[[signedIn]]"-->
-      <!--    user="{{user}}"-->
-      <!--    route="{{route}}">-->
-      <!--  </article-form-organism>-->
-      <!--</template>-->
+      <template is="dom-if" if="{{_checkAction(action)}}">
+        <article-form-component
+          article-id="[[articleId]]"
+          roles="[[roles]]"
+          user="{{user}}">
+        </article-form-component>
+      </template>
 
-      <div class="flex" style="min-width: 400px">
-        <article-component
+      <div class="flex" style="min-width: 300px">
+        <article-body-component
           article-id="[[articleId]]"
           roles="[[roles]]"
           action="[[action]]"
           user="{{user}}"
           is-editor-open="[[isEditorOpen]]">
-        </article-component>
+        </article-body-component>
       </div>
     </div>
   </template>

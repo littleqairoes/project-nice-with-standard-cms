@@ -8,6 +8,11 @@
     Polymer.ArticleBehaviorImpl = {
 
       properties: {
+
+        photoblog: {
+          type: Object
+        },
+
         article: {
           type: Object
         },
@@ -39,6 +44,8 @@
         return {
           articles: this._version + '/' + this._articleGroup + '/articles',
           owners: this._version + '/' + this._articleGroup + '/owners',
+          media: this._version + '/' + this._articleGroup + '/media',
+          photoblog: this._version + '/' + this._articleGroup + '/photoblog',
           options: {
             published: options + '/published',
             draft: options + '/draft'
@@ -65,8 +72,8 @@
             var updates = {};
             updates[this.articlePath.articles +'/' + key] = {
               title: this.$$('#create-new-title').value,
-              datePublished: this._todayUTC,
-              dateCreated: this._todayUTC
+              date_published: this._todayUTC,
+              date_created: this._todayUTC
             };
             updates[this.articlePath.owners + '/' + key] = {owner: this.user.uid};
             updates[this.articlePath.options.draft + '/' + key] = {value: this._todayUTC};
@@ -81,6 +88,10 @@
         } else {
           this._catchError(new Error('Error: Doesn\'t have permission to create an article'));
         }
+      },
+
+      _checkVideoString: function(video) {
+        return video && video.trim && video.trim().length > 0
       },
 
       // _gotoArticle: function(pageId = '', action, name = 'New Window') {

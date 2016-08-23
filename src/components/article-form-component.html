@@ -1,0 +1,506 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+
+<link rel="import" href="../../bower_components/polymerfire/firebase-document.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-query.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-storage.html">
+
+<link rel="import" href="../behaviors/utils-behavior.html">
+<link rel="import" href="../behaviors/user-role-behavior.html">
+<link rel="import" href="../behaviors/file-behavior.html">
+<link rel="import" href="../behaviors/article-behavior.html">
+
+<script src="../../bower_components/underscore/underscore.js"></script>
+
+<dom-module id="article-form-component">
+
+  <template>
+
+    <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors">
+      :host .article-editor-form {
+        padding: 20px;
+        padding-top: 0px;
+      }
+
+      :host .file-list-item {
+        padding-top: 10px;
+      }
+
+      :host .file-list-item-name {
+        padding-left: 10px;
+        font-size: 0.7em;
+      }
+
+      :host .file-buttons {
+
+      }
+
+      :host {
+        @apply(--layout-flex);
+      }
+
+    </style>
+
+    <firebase-document
+      id="data-ref"
+      path$="[[articlePath.articles]]/[[articleId]]"
+      data="{{article}}">
+    </firebase-document>
+    <firebase-document
+      id="owner-ref"
+      path$="[[articlePath.owners]]/[[articleId]]"
+      data="{{owner}}">
+    </firebase-document>
+    <firebase-query
+      id="photoblog-ref"
+      path$="[[articlePath.photoblog]]/[[articleId]]"
+      data="{{photoblog}}">
+    </firebase-query>
+
+    <firebase-document
+      id="published-ref"
+      data="{{publishOption}}"
+      path="[[articlePath.options.published]]/[[articleId]]">
+    </firebase-document>
+    <firebase-document
+      id="draft-ref"
+      data="{{draftOption}}"
+      path="[[articlePath.options.draft]]/[[articleId]]">
+    </firebase-document>
+
+    <firebase-storage
+      id="header-image-storage"
+      path="[[articlePath.articles]]/[[articleId]]"
+      files="[[file]]"
+      uploaded-files="{{headerImage}}"
+      on-error="_catchError"
+      auto-upload>
+    </firebase-storage>
+
+    <firebase-storage
+      id="photoblog-storage"
+      path="[[articlePath.photoblog]]/[[articleId]]"
+      files="[[files]]"
+      uploaded-files="{{photoBlogUploads}}"
+      on-error="_catchError"
+      auto-upload>
+    </firebase-storage>
+
+
+    <template is="dom-if" if="{{checkPermissionWithOwner(roles.staff, owner)}}">
+      <div class="article-editor-form">
+        <form is="iron-form" id="article-editor">
+          <paper-input
+            id="title"
+            name="title"
+            label="Title"
+            value="{{article.title}}"
+            max="100"
+            char-counter
+            >
+          </paper-input>
+          <paper-input
+            id="video"
+            name="video"
+            label="Youtube Video URL"
+            value="{{article.video}}"
+            >
+          </paper-input>
+          <paper-input
+            name="header-image"
+            id="header-image"
+            label="Header Image"
+            value="{{article.header_image}}">
+          </paper-input>
+          <input
+            id="header-image-file-upload"
+            name="headerImageFileUpload"
+            placeholder="Upload it here"
+            type="file"
+            data-for="header-image"
+            on-change="uploadSingleFile"
+            >
+          </input>
+          <template is="dom-repeat" items="{{headerImage}}">
+            <div class="horizontal layout center file-list-item">
+              <paper-progress class="flex-3" value="{{item.bytesTransferred}}" min="0" max="{{item.totalBytes}}"></paper-progress>
+              <div class="flex file-list-item-name">
+                {{item.ref.name}}
+              </div>
+              <div class="file-buttons">
+                <template is="dom-if" if="{{_downloadFull(item.bytesTransferred, item.totalBytes)}}">
+                  <paper-icon-button data-url$="{{item.downloadURL}}" icon="image:image" on-tap="_useAsHeaderImage" raised></paper-icon-button>
+                  <paper-icon-button data-url$="{{item.downloadURL}}" data-index$="{{index}}" data-path$="{{item.ref.fullPath}}" icon="icons:delete" on-tap="_deleteFile" raised></paper-icon-button>
+                </template>
+                <template is="dom-if" if="{{!_downloadFull(item.bytesTransferred, item.totalBytes)}}">
+                  <paper-icon-button data-index$="{{index}}" data-variable="headerImage" data-storage="#header-image-storage" icon="icons:cancel" on-tap="_cancelUpload" raised></paper-icon-button>
+                </template>
+              </div>
+            </div>
+          </template>
+          <hr/>
+          <paper-textarea
+            id="sub-title"
+            label="Short Description"
+            name="sub-title"
+            value="{{article.sub_title}}"
+            rows="1"
+            max="200"
+            char-counter>
+          </paper-textarea>
+          <paper-textarea
+            id="body"
+            label="Body"
+            name="body"
+            value="{{article.body}}"
+            rows="3"
+            char-counter>
+          </paper-textarea>
+          <hr/>
+          <div class="photoblog-album">
+            Photoblog Album:
+            <input
+              id="photoblog-file-upload"
+              name="photoblogFileUpload"
+              placeholder="Upload Multiple Files here"
+              type="file"
+              on-change="uploadMultipleFiles"
+              multiple
+              accept="image/*"
+              >
+            </input>
+          </div>
+          <template is="dom-repeat" items="{{photoBlogUploads}}">
+            <div class="horizontal layout center file-list-item">
+              <paper-progress class="flex-3" value="{{item.bytesTransferred}}" min="0" max="{{item.totalBytes}}"></paper-progress>
+              <div class="flex file-list-item-name">
+                {{item.ref.name}}
+              </div>
+              <div class="file-buttons">
+                <template is="dom-if" if="{{!_downloadFull(item.bytesTransferred, item.totalBytes)}}">
+                  <paper-icon-button data-index$="{{index}}" data-variable="photoBlogUploads" data-storage="#photoblog-storage" icon="icons:cancel" on-tap="_cancelUpload" raised></paper-icon-button>
+                </template>
+              </div>
+            </div>
+          </template>
+          <template is="dom-repeat" items="{{photoblog}}">
+            <div class="horizontal layout center file-list-item">
+              <div class="flex file-list-item-name">
+                <paper-textarea
+                  label="Caption for {{item.name}}"
+                  name="sub-title"
+                  value="{{item.caption}}"
+                  rows="1"
+                  max="200"
+                  char-counter>
+                </paper-textarea>
+              </div>
+              <paper-icon-button data-index$="{{item.$key}}" data-path$="{{item.fullPath}}" icon="icons:delete" on-tap="_deletePhotoblogFile" raised></paper-icon-button>
+            </div>
+          </template>
+          <div class="horizontal layout" style="padding: 10px">
+            <span style="padding-right: 10px">
+              Publish:
+            </span>
+            <paper-toggle-button
+              id="publish"
+              on-change="onPublish"
+            ></paper-toggle-button>
+          </div>
+          <div class="horizontal layout" style="padding: 10px">
+            <span style="padding-right: 10px">
+              Front published:
+            </span>
+            <paper-toggle-button
+              id="front"
+              on-change="onFrontPublish"
+            ></paper-toggle-button>
+          </div>
+        </form>
+      </div>
+
+    </template>
+    <paper-toast id="toaster"></paper-toast>
+  </template>
+
+  <script>
+
+    Polymer({
+
+      is: 'article-form-component',
+
+      properties: {
+        draftOption: {
+          type: Object
+        },
+        publishOption: {
+          type: Object
+        },
+        headerImage: {
+          type: Object
+        },
+        photoBlogUploads: {
+          type: Object
+        }
+      },
+
+      observers: [
+        '_checkPublish(publishOption.value)',
+        '_checkFront(publishOption.front)',
+        '_checkHeaderImageUpload(headerImage.splices)',
+        '_checkPhotoBlogUploads(photoBlogUploads.splices)',
+        '_checkArticle(article.*)'
+      ],
+
+      behaviors: [
+        Polymer.UtilsBehavior,
+        Polymer.UserRoleBehavior,
+        Polymer.FileBehavior,
+        Polymer.ArticleBehavior,
+      ],
+
+      _checkArticle: function(e) {
+        if (e.path !== 'article') {
+          this._setDatePublished();
+        }
+      },
+
+      _setDatePublished: _.debounce(function() {
+        if (this.$$('#data-ref')) {
+          var updates = {};
+          console.log(this.$$('#data-ref').path );
+          updates[this.$$('#data-ref').path + '/date_published'] = this._todayUTC
+          firebase.database().ref().update(updates).catch(this._catchError.bind(this));
+        }
+      }, 1000),
+
+      _checkPublish: function(o) {
+        if (this.$$('#publish')) {
+          this.$$('#publish').checked = this._forceZero(o, false);
+        }
+      },
+
+      _checkFront: function(o) {
+        if (this.$$('#front')) {
+          this.$$('#front').checked = this._forceZero(o, false);
+        }
+      },
+
+      _checkHeaderImageUpload: function(headerImage) {
+        // console.log(headerImage)
+        if (this.$$('#header-image-file-upload')) {
+          this.$$('#header-image-file-upload').value = '';
+        }
+
+        if (headerImage && headerImage.indexSplices[0] && headerImage.indexSplices[0].object) {
+          var arr = headerImage.indexSplices[0].object;
+          if (arr && arr.length > 0 && arr[arr.length - 1].downloadURL) {
+            this.$$('#header-image').value = arr[arr.length - 1].downloadURL
+          }
+        }
+      },
+
+      _checkPhotoBlogUploads: function(photoblog) {
+        if (photoblog && photoblog.indexSplices[0] && photoblog.indexSplices[0].object) {
+          var arr = photoblog.indexSplices[0].object;
+
+          if (arr.length === 0) {
+            if (this.$$('#photoblog-file-upload')) {
+              this.$$('#photoblog-file-upload').value = '';
+            }
+          }
+
+          for (var i in arr) {
+            if (arr[i].totalBytes === arr[i].bytesTransferred) {
+              var key = arr[i].ref.fullPath.replace(/\#|\.|\$|\[|\]/g, '-');
+              firebase.database().ref(key).set({
+                fullPath: arr[i].ref.fullPath,
+                name: arr[i].ref.name,
+                caption: arr[i].ref.name,
+                downloadURL: arr[i].downloadURL
+              }).then(function(){
+                this.splice('photoBlogUploads', i , 1);
+              }.bind(this)).catch(this._catchError.bind(this));
+            }
+          }
+        }
+      },
+
+      _deletePhotoblogFile: function(e) {
+        var index = e.target.getAttribute('data-index');
+        var fullPath = e.target.getAttribute('data-path');
+        firebase.database().ref(this.$$('#photoblog-ref').path + '/' + index).remove()
+          .then(function(){
+            return firebase.storage().ref(fullPath).delete();
+          }.bind(this))
+          .then(function(){
+            this.$.toaster.show('File Deleted')
+          }.bind(this))
+          .catch(this._catchError.bind(this));
+      },
+
+      _useAsHeaderImage: function(e) {
+        if (e.target.getAttribute('data-url')) {
+          this.$$('#header-image').value = e.target.getAttribute('data-url');
+        } else {
+          this._catchError(new Error('Error: Cannot use file'));
+        }
+      },
+
+      _deleteFile: function(e) {
+        var url = e.target.getAttribute('data-url');
+        var path = e.target.getAttribute('data-path');
+        var index = e.target.getAttribute('data-index');
+        if (url && path) {
+          firebase.storage().ref(path).delete().then(function() {
+            if (this.$$('#header-image').value === url) {
+              this.$$('#header-image').value = ''
+            }
+            this.splice('headerImage', index, 1);
+            this.$.toaster.show('File delete')
+          }.bind(this)).catch(this._catchError.bind(this));
+        } else {
+          this._catchError(new Error('Error: Cannot delete file'));
+        }
+      },
+
+      _cancelUpload: function(e) {
+        var index = e.target.getAttribute('data-index');
+        var storage = e.target.getAttribute('data-storage');
+        var variable = e.target.getAttribute('data-variable')
+        if (index) {
+
+          this.$$(storage).cancel(index);
+          this.splice(variable, index, 1);
+        }
+      },
+
+      _downloadFull: function(download, total) {
+        return download === total;
+      },
+
+      onPublish: function(e) {
+        var message = e.target.checked ? 'Published' : 'Not Published';
+        var checked = e.target.checked;
+        var video = this.article.video && this.article.video.trim && this.article.video.trim().length > 0 ? this._todayUTC : null;
+        var photoblog = this.photoblog && this.photoblog.length > 0 ? this._todayUTC : null;
+
+
+        var obj = {
+          value: this._todayUTC
+        }
+
+        if (video) {
+          obj.video = video
+        }
+
+        if (photoblog) {
+          obj.photoblog = photoblog
+        }
+
+        if (this.$.front.checked) {
+          obj.front = this._todayUTC
+        }
+
+        var updates = {}
+
+        if (checked) {
+          updates[this.$$('#published-ref').path] = obj
+          firebase.database().ref().update(updates).then(function() {
+            return firebase.database().ref(this.$$('#draft-ref').path).remove()
+          }.bind(this)).then(function() {
+            this.$.toaster.show(message);
+          }.bind(this)).catch(this._catchError.bind(this))
+        } else {
+          updates[this.$$('#draft-ref').path] = obj;
+          firebase.database().ref().update(updates).then(function() {
+            return firebase.database().ref(this.$$('#published-ref').path).remove()
+          }.bind(this)).then(function() {
+            this.$.toaster.show(message);
+          }.bind(this)).catch(this._catchError.bind(this))
+        }
+      }
+
+      // onPublish(e) {
+      //   var message = e.target.checked ? 'Published' : 'Not Published';
+      //   var checked = e.target.checked;
+      //   this._setOption(
+      //     this.articlePath.options.draft,
+      //     this.articleId,
+      //     !checked ? this._todayUTC : null,
+      //     '#draft-ref'
+      //   ).then(function(){
+      //     if (!checked) {
+      //       this._setOption(
+      //         this.articlePath.options.front,
+      //         this.articleId,
+      //         null,
+      //         '#front-ref'
+      //       ).catch(this._catchError.bind(this));
+      //     }
+      //     this._setOption(
+      //       this.articlePath.options.published,
+      //       this.articleId,
+      //       checked ? this._todayUTC : null,
+      //       '#published-ref'
+      //     ).then(function(){
+      //       e.target.checked = checked;
+      //       this.$.toaster.hide();
+      //       this.$.toaster.show(message);
+      //     }.bind(this)).catch(this._catchError.bind(this));
+      //   }.bind(this)).catch(this._catchError.bind(this));
+      // },
+
+      // onFrontPublish(e) {
+      //   var message = e.target.checked ? 'Published at Header' : 'Removed at Header';
+      //   var checked = e.target.checked;
+      //   if (checked) {
+      //     this._setOption(
+      //       this.articlePath.options.draft,
+      //       this.articleId,
+      //       null,
+      //       '#draft-ref'
+      //     ).catch(this._catchError.bind(this));
+      //     this._setOption(
+      //       this.articlePath.options.published,
+      //       this.articleId,
+      //       this._todayUTC,
+      //       '#published-ref'
+      //     ).catch(this._catchError.bind(this));
+      //   }
+      //   this._setOption(
+      //     this.articlePath.options.front,
+      //     this.articleId,
+      //     checked ? this._todayUTC : null,
+      //     '#front-ref'
+      //   ).then(function(){
+      //     e.target.checked = checked;
+      //     this.$.toaster.hide();
+      //     this.$.toaster.show(message);
+      //   }.bind(this)).catch(this._catchError.bind(this));
+      // },
+
+
+
+    });
+
+  </script>
+
+</dom-module>

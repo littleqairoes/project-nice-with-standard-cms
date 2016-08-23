@@ -56,7 +56,12 @@
       _catchError: function(error) {
         console.log(error)
         if (this.$.toaster) {
-          this.$.toaster.show('Error: ' + error.message);
+          if (error.detail && error.detail.message) {
+            this.$.toaster.show('Error: ' + error.detail.message);
+          } else {
+            this.$.toaster.show('Error: ' + error.message);
+          }
+
         } else {
           alert('Error: ' + error.message);
         }
