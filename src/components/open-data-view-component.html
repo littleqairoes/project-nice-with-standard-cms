@@ -1,0 +1,93 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-query.html">
+
+<link rel="import" href="../../bower_components/app-route/app-route.html">
+
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../behaviors/open-data-behavior.html">
+<link rel="import" href="../behaviors/user-role-behavior.html">
+
+<link rel="import" href="open-data-body-component.html">
+<link rel="import" href="open-data-form-component.html">
+
+<dom-module id="open-data-view-component">
+  <template>
+
+    <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors">
+
+    </style>
+
+    <app-route
+      route="{{route}}"
+      pattern="/:action"
+      data="{{routeData}}"
+      tail="{{subroute}}">
+    </app-route>
+
+    <div class="layout horizontal wrap">
+      <template is="dom-if" if="{{_checkAction(action)}}">
+        <open-data-form-component
+          open-data-id="[[openDataId]]"
+          roles="[[roles]]"
+          user="{{user}}">
+        </open-data-form-component>
+      </template>
+
+      <div class="flex" style="min-width: 300px">
+        <open-data-body-component
+          open-data-id="[[openDataId]]"
+          roles="[[roles]]"
+          action="[[action]]"
+          user="{{user}}"
+          is-editor-open="[[isEditorOpen]]">
+        </open-data-body-component>
+      </div>
+    </div>
+  </template>
+  <script>
+    Polymer({
+
+      is: 'open-data-view-component',
+
+      properties: {
+        isEditorOpen: {
+          type: Boolean,
+          value: false,
+          computed: '_checkAction(action)'
+        },
+        route: {
+          type: Object
+        },
+        routeData: {
+          type: Object
+        },
+        subroute: {
+          type: Object
+        },
+        action: {
+          type: String
+        }
+      },
+
+      observers: [
+        '_routeActionChanged(routeData.action)'
+      ],
+
+      behaviors: [
+        Polymer.OpenDataBehavior,
+        Polymer.UserRoleBehavior
+      ],
+
+      _routeActionChanged: function(action) {
+        this.action = action;
+      },
+
+      _checkAction: function(a) {
+        return a === 'edit';
+      },
+
+    });
+  </script>
+</dom-module>

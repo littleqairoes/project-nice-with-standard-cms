@@ -1,22 +1,126 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-query.html">
+
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
 <link rel="import" href="../components/tiles-component.html">
 <link rel="import" href="../components/home-page-articles-component.html">
+<link rel="import" href="../components/home-page-open-data-component.html">
+<link rel="import" href="../components/footer-component.html">
 
 <link rel="import" href="../behaviors/user-role-behavior.html">
+<link rel="import" href="../behaviors/category-behavior.html">
 
 <dom-module id="home-page">
   <template>
 
-    <tiles-component
-      roles="[[roles]]"
-      user="[[user]]">
-    </tiles-component>
+    <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors">
+      :host .content {
+        min-width: 300px;
+        max-width: 1000px;
+      }
 
-    <home-page-articles-component
-      roles="[[roles]]"
-      user="[[user]]">
-    </home-page-articles-component>
+      :host .tile {
+        min-width: 120px;
+      }
+
+      :host .proper-tile {
+        margin: 5px;
+        padding: 10px;
+        padding-top: 20px;
+        width: 100px;
+        height: 130px;
+        text-align: center;
+      }
+
+      :host .tile img{
+        width: 50%;
+      }
+
+      :host .tile-anchor {
+        font-size: 0.8em;
+        text-decoration: none;
+        color: inherit;
+      }
+    </style>
+
+    <firebase-query
+      id="category-ref"
+      path$="[[categoryPath.categories]]"
+      data="{{categories}}">
+    </firebase-query>
+
+    <app-route
+      route="{{route}}"
+      pattern="/:pathId"
+      query-params="{{queryParams}}">
+    </app-route>
+
+    <div style="margin-bottom: 30px">
+      <tiles-component
+        roles="[[roles]]"
+        user="[[user]]">
+      </tiles-component>
+    </div>
+
+    <div class="horizontal layout">
+      <div class="flex">
+      </div>
+      <div class="flex-5 content">
+        <h2>
+          Browse Topics:
+        </h2>
+        <div class="horizontal layout wrap">
+          <template is="dom-repeat" items="{{categories}}">
+            <div class="flex tile">
+              <div class="horizontal layout">
+                <div class="flex">
+
+                </div>
+                <a href="?child={{item.$key}}" class="tile-anchor">
+                  <paper-material class="proper-tile">
+
+                    <img src="{{item.icon}}"><br/>
+                    {{item.name}}
+
+                  </paper-material>
+                </a>
+                <div class="flex">
+
+                </div>
+              </div>
+
+            </div>
+
+          </template>
+        </div>
+      </div>
+      <div class="flex">
+
+      </div>
+    </div>
+
+    <div>
+      <home-page-articles-component
+        roles="[[roles]]"
+        user="[[user]]"
+        query-params="{{queryParams}}"
+        >
+      </home-page-articles-component>
+    </div>
+
+    <div>
+      <home-page-open-data-component
+        roles="[[roles]]"
+        user="[[user]]"
+        query-params="{{queryParams}}">
+      </home-page-open-data-component>
+    </div>
+
+    <div>
+      <footer-component></footer-component>
+    </div>
 
   </template>
   <script>
@@ -25,10 +129,17 @@
       is: 'home-page',
 
       properties: {
+        scrollTarget: {
+          type: Object
+        },
+        queryParams: {
+          type: Object
+        }
       },
 
       behaviors: [
-        Polymer.UserRoleBehavior
+        Polymer.UserRoleBehavior,
+        Polymer.CategoryBehavior
       ]
 
     });

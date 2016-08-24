@@ -37,7 +37,9 @@
     "paper-toggle-button": "^1.2.0",
     "paper-progress": "^1.0.10",
     "underscore": "^1.8.3",
-    "google-youtube": "^1.2.1"
+    "google-youtube": "^1.2.1",
+    "paper-tooltip": "^1.1.2",
+    "oswald-googlefont": "*"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0"

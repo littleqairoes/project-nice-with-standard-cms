@@ -5,24 +5,28 @@
 
 <link rel="import" href="../behaviors/user-role-behavior.html">
 
-<link rel="import" href="article-list-component.html">
+<link rel="import" href="open-data-list-component.html">
 
-<dom-module id="article-all-component">
+<dom-module id="open-data-all-component">
   <template>
 
     <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors">
+      :host .open-data {
+        min-width: 300px;
+      }
     </style>
 
     <div class="horizontal layout">
       <div class="flex"></div>
-      <article-list-component
-        class="flex-4"
+      <open-data-list-component
+        class="flex-4 open-data"
         limit="[[limit]]"
         roles="[[roles]]"
         user="{{user}}"
+        query-params="{{queryParams}}"
         scroll-target="[[scrollTarget]]"
         load-more>
-      </article-list-component>
+      </open-data-list-component>
       <div class="flex"></div>
     </div>
 
@@ -30,7 +34,7 @@
   <script>
     Polymer({
 
-      is: 'article-all-component',
+      is: 'open-data-all-component',
 
       properties: {
         limit: {
@@ -41,6 +45,8 @@
           type: Object
         }
       },
+
+
 
       behaviors: [
         Polymer.UserRoleBehavior

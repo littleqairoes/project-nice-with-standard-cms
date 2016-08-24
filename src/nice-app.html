@@ -28,6 +28,10 @@
 <link rel="import" href="../bower_components/paper-tabs/paper-tabs.html">
 <link rel="import" href="../bower_components/paper-tabs/paper-tab.html">
 
+<link rel="import" href="../bower_components/paper-styles/color.html">
+<link rel="import" href="../bower_components/paper-styles/shadow.html">
+<link rel="import" href="styles/typography.html">
+
 <link rel="import" href="../bower_components/iron-scroll-threshold/iron-scroll-threshold.html">
 
 <link rel="import" href="behaviors/user-role-behavior.html">
@@ -118,6 +122,10 @@
       query="[[_computeMediaQuery()]]"
       on-query-matches-changed="_onQueryMatchesChanged"></iron-media-query>
 
+    <iron-media-query
+      query="[[_computeMediaQueryForTitle()]]"
+      on-query-matches-changed="_onQueryMatchesChangedTitle"></iron-media-query>
+
 
     <app-drawer-layout force-narrow fullbleed id="main-app-drawer-layout">
       <!-- Drawer content -->
@@ -181,16 +189,28 @@
             route="{{subroute}}"
             user="{{user}}"
             roles="[[roles]]"
-            signed-in="[[signedIn]]">
+            scroll-target="[[_getScrollTarget()]]">
           </home-page>
           <article-page
             name="article-page"
             route="{{subroute}}"
             user="{{user}}"
             roles="[[roles]]"
-            signed-in="[[signedIn]]"
             scroll-target="[[_getScrollTarget()]]">
           </article-page>
+          <open-data-page
+            name="open-data-page"
+            route="{{subroute}}"
+            user="{{user}}"
+            roles="[[roles]]"
+            scroll-target="[[_getScrollTarget()]]">
+          </open-data-page>
+          <about-us-page
+            name="about-us-page"
+            route="{{subroute}}"
+            user="{{user}}"
+            roles="[[roles]]">
+          </about-us-page>
         </iron-pages>
 
       </app-header-layout>
@@ -264,14 +284,14 @@
       get _menu() {
         return [
           {
-            href: '/home-page',
+            href: '/home-page/',
             label: 'Home',
             name: 'home-page',
           },
           {
-            href: '/about-page',
+            href: '/about-us-page/',
             label: 'About',
-            name: 'about-page',
+            name: 'about-us-page',
           },
           {
             href: '/article-page/',
@@ -279,18 +299,24 @@
             name: 'article-page',
           },
           {
-            href: '/open-data-page',
+            href: '/open-data-page/',
             label: 'Open Data',
             name: 'open-data-page',
           },
           {
-            href: '/dashboard-page',
+            href: '/contact-page/',
+            label: 'Contact Us',
+            name: 'contact-page',
+          },
+
+          {
+            href: '/dashboard-page/',
             label: 'Dashboard',
             name: 'dashboard-page',
             auth: true
           },
           {
-            href: '/profile-page',
+            href: '/profile-page/',
             label: 'Profile',
             name: 'profile-page',
             auth: true
@@ -321,9 +347,17 @@
         return '(max-width: ' + this.$['main-app-drawer-layout'].responsiveWidth + ')';
       },
 
+      _computeMediaQueryForTitle: function() {
+        return '(max-width: ' + 1300 + 'px)';
+      },
+
       _onQueryMatchesChanged: function(e) {
         this.showMenuButton = !e.detail.value ? 'hidden' : false;
         this.showHeaderMenu = e.detail.value ? 'hidden' : false;
+
+      },
+
+      _onQueryMatchesChangedTitle: function(e) {
         this.appHeaderTitle = !e.detail.value ? 'Network of Information and Collaboration Exchange' : 'N.I.C.E'
       },
 

@@ -1,0 +1,300 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-document.html">
+
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
+<link rel="import" href="../../bower_components/marked-element/marked-element.html">
+<link rel="import" href="../../bower_components/paper-tooltip/paper-tooltip.html">
+
+
+<link rel="import" href="../behaviors/utils-behavior.html">
+<link rel="import" href="../behaviors/open-data-behavior.html">
+<link rel="import" href="../behaviors/user-role-behavior.html">
+<link rel="import" href="../behaviors/category-behavior.html">
+
+
+
+<dom-module id="open-data-body-component">
+  <template>
+
+    <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors">
+      :host {
+        width: 100%;
+      }
+
+      :host .title h2 {
+        margin-bottom: 0px;
+      }
+
+
+      :host .open-data-body-container {
+        min-width: 300px;
+        max-width: 1000px;
+      }
+
+      :host .open-data-body {
+        padding: 20px;
+      }
+
+      :host .open-data-by-line {
+        font-size: 0.8em;
+        margin-bottom: 5px;
+      }
+
+      :host .buttons a {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      :host table {
+        border: 1px solid black;
+        border-spacing: 0px;
+      }
+
+      :host td, th {
+        border: 1px solid black;
+        padding: 10px;
+        margin: 0;
+      }
+
+      :host tr {
+        padding: 0;
+        margin: 0;
+      }
+
+      :host .category-title {
+        font-size: 0.8em;
+      }
+
+      :host .caption {
+        margin-left: 10px;
+        margin-right: 10px;
+        text-align: right;
+        font-size: 0.8em;
+      }
+    </style>
+
+    <firebase-document
+      id="data-ref"
+      data="{{openData}}"
+      path$="[[openDataPath.openData]]/[[openDataId]]">
+    </firebase-document>
+    <firebase-document
+      id="owner-ref"
+      path$="[[openDataPath.owners]]/[[openDataId]]"
+      data="{{owner}}">
+    </firebase-document>
+    <firebase-document
+      id="media-ref"
+      path$="[[openDataPath.media]]/[[openDataId]]"
+      data="{{mediaData}}">
+    </firebase-document>
+
+    <firebase-document
+      id="category-ref"
+      path$="[[categoryPath.categories]]"
+      data="{{categories}}">
+    </firebase-document>
+
+    <template is="dom-if" if="{{_forceZero(openData)}}">
+      <div class="open-data-item">
+
+
+        <div class="horizontal layout">
+          <div class="flex"></div>
+          <div class="flex-3 open-data-body-container">
+            <div class="title">
+              <h2>{{openData.title}}</h2>
+            </div>
+            <hr/>
+            <div class="open-data-body">
+              <div class="open-data-by-line">
+                Last Edited at: {{renderDate(openData.date_published)}}
+              </div>
+              <div class="horizontal layout wrap center">
+                <div class="category-title">
+                  Categories:
+                </div>
+                <template is="dom-repeat" items="{{categoryArray}}">
+                  <template is="dom-if" if="_categoryIcon(categories, item.$key)">
+                    <div style="position: relative">
+                      <iron-icon style="margin-left: 10px" id="{{item.$key}}" src="{{_categoryIcon(categories, item.$key)}}"></iron-icon>
+                      <paper-tooltip for="{{item.$key}}">{{_categoryName(categories, item.$key)}}</paper-tooltip>
+                    </div>
+                  </template>
+                </template>
+              </div>
+              <marked-element markdown="{{openData.body}}">
+                <div class="markdown-html"></div>
+              </marked-element>
+
+              <h3 class="header-3">
+                Files:
+              </h3>
+                <template is="dom-repeat" items="{{media}}">
+                  <div class="horizontal layout center">
+                    <iron-icon icon="{{_setIcon(item)}}"></iron-icon>
+                    <div class="flex caption">
+                      {{item.caption}}
+                    </div>
+                    <a href="{{item.downloadURL}}" target="_blank">
+                      <paper-icon-button icon="icons:file-download"></paper-icon-button>
+                    </a>
+                  </div>
+
+
+                </template>
+
+            </div>
+            <div class="buttons">
+              <a href="/open-data-page/">
+                <paper-button>Go back</paper-button>
+              </a>
+              <template is="dom-if" if="{{checkPermissionWithOwner(roles.staff, owner)}}">
+                <template is="dom-if" if="{{isEditorOpen}}">
+                  <a href="/open-data-page/[[openDataId]]/view">
+                    <paper-button>Close Editor</paper-button>
+                  </a>
+                </template>
+                <template is="dom-if" if="{{!isEditorOpen}}">
+                  <a href="/open-data-page/[[openDataId]]/edit">
+                    <paper-icon-button icon="editor:mode-edit"></paper-icon-button>
+                  </a>
+                </template>
+                <paper-icon-button on-tap="_openDeleteOpenData" icon="icons:delete"></paper-icon-button>
+              </template>
+            </div>
+          </div>
+          <div class="flex"></div>
+        </div>
+
+      </div>
+    </template>
+
+    <template is="dom-if" if="{{!_forceZero(article)}}">
+      <div class="horizontal layout">
+        <div class="flex"></div>
+        <div class="center flex" style="margin-top: 200px; text-align: center">
+          <paper-spinner alt="Loading article" active></paper-spinner>
+        </div>
+        <div class="flex"></div>
+      </div>
+    </template>
+
+    <paper-dialog
+      id="delete-dialog"
+      entry-animation="scale-up-animation"
+      exit-animation="fade-out-animation">
+
+      <div class="delete-text">
+        Are you sure you want to delete this entry?
+      </div>
+      <div class="horizontal layout">
+        <paper-button on-tap="_cancelDelete">Cancel</paper-button>
+        <paper-button on-tap="_deleteOpenData">Delete</paper-button>
+      </div>
+    </paper-dialog>
+
+    <paper-toast id="toaster"></paper-toast>
+
+  </template>
+  <script>
+    Polymer({
+
+      is: 'open-data-body-component',
+
+      properties: {
+        openDataId: {
+          type: String,
+        },
+        article: {
+          type: Object
+        },
+        photoblogData: {
+          type: Object
+        },
+        categoryArray: {
+          type: Object
+        }
+      },
+
+      observers: [
+        '_checkMediaData(mediaData)',
+        '_checkCategories(openData.categories)'
+      ],
+
+      behaviors: [
+        Polymer.UtilsBehavior,
+        Polymer.CategoryBehavior,
+        Polymer.OpenDataBehavior,
+        Polymer.UserRoleBehavior
+      ],
+
+
+      _categoryIcon: function(categories, key) {
+        if (categories[key]) {
+          return categories[key].icon
+        }
+      },
+
+      _categoryName: function(categories, key) {
+        if (categories[key]) {
+          return categories[key].name
+        }
+      },
+
+      _checkCategories: function(categories) {
+        this.categoryArray = [];
+        for (var i in categories) {
+          this.push('categoryArray', {$key: i});
+        }
+      },
+
+      _openDeleteOpenData: function() {
+        this.$$('#delete-dialog').open()
+      },
+
+      _cancelDelete: function() {
+        this.$$('#delete-dialog').cancel()
+      },
+
+      _setIcon: function(item) {
+        if (item.contentType) {
+          if (item.contentType.indexOf('image/') >= 0) {
+            return 'image:image'
+          } else if (item.contentType === 'application/pdf' || item.name.indexOf('.pdf') >= item.name.length - 4) {
+            return 'image:picture-as-pdf'
+          } else if (item.contentType.indexOf('text/') >= 0) {
+            return 'icons:assignment'
+          }
+        } else if (item.name.indexOf('.xls') >= item.name.length - 5) {
+          return 'image:grid-on'
+        } else if (item.name.indexOf('.doc') >= item.name.length - 5) {
+          return 'icons:description'
+        }
+        return 'icons:view-module'
+      },
+
+      _checkMediaData: function(e) {
+        this.media = [];
+        for (var i in e) {
+          this.push('media', e[i]);
+        }
+      },
+
+      // /(youtu(?:\.be|be\.com)\/(?:.*v(?:\/|=)|(?:.*\/)?)([\w'-]+))/i
+
+    });
+  </script>
+</dom-module>

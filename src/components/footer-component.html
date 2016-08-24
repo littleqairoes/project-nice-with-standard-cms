@@ -1,0 +1,28 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<dom-module id="footer-component">
+  <template>
+
+    <style is="custom-style" include="iron-flex iron-flex-alignment">
+      :host {
+
+      }
+
+      :host footer {
+        background-color: #BBBBBB;
+        padding: 20px;
+        margin-top: 20px;
+      }
+    </style>
+    <footer>
+      NICE Project
+    </footer>
+  </template>
+  <script>
+    Polymer({
+      is: 'footer-component'
+    })
+  </script>
+</dom-module>

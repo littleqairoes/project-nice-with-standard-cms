@@ -3,7 +3,12 @@
   "shell": "src/nice-app.html",
   "fragments": [
     "src/pages/home-page.html",
+    "src/pages/article-page.html",
+    "src/pages/dashboard-page.html",
+    "src/pages/open-data-page.html",
     "src/components/article-all-component.html",
-    "src/components/article-view-component.html"
+    "src/components/article-view-component.html",
+    "src/components/open-data-all-component.html",
+    "src/components/open-data-view-component.html"
   ]
 }

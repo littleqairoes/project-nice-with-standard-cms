@@ -45,14 +45,6 @@
         return nd.toLocaleDateString() + ' - ' + nd.toLocaleTimeString();
       },
 
-      openCreateNewDialog: function() {
-        if (this.$$('#create-new-dialog')) {
-          this.$$('#create-new-dialog').open();
-        } else {
-          this.$.toaster.show('Error: No dialog box exists. Please report to us for this bug');
-        }
-      },
-
       _catchError: function(error) {
         console.log(error)
         if (this.$.toaster) {

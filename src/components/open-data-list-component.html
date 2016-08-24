@@ -1,22 +1,25 @@
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 <link rel="import" href="../../bower_components/polymerfire/firebase-query.html">
 
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
 <link rel="import" href="../../bower_components/iron-scroll-threshold/iron-scroll-threshold.html">
 <link rel="import" href="../../bower_components/iron-list/iron-list.html">
 
-<link rel="import" href="../behaviors/article-behavior.html">
+<link rel="import" href="../behaviors/open-data-behavior.html">
+<link rel="import" href="../behaviors/category-behavior.html">
 <link rel="import" href="../behaviors/user-role-behavior.html">
 
-<link rel="import" href="article-item-component.html">
+<link rel="import" href="open-data-item-component.html">
 <script src="../../bower_components/underscore/underscore.js"></script>
 
-<dom-module id="article-list-component">
+<dom-module id="open-data-list-component">
   <template>
 
-    <style>
+    <style is="custom-style" include="iron-flex iron-flex-alignment">
       :host .title {
         padding-left: 1em;
         padding-right: 1em;
@@ -26,31 +29,87 @@
         font-size: 2em;
       }
 
-      :host article-item-component {
+      :host open-data-item-component {
         position: relative !important;
+      }
+
+      :host .tile {
+        min-width: 120px;
+      }
+
+      :host .proper-tile {
+        margin: 5px;
+        padding: 10px;
+        padding-top: 20px;
+        width: 100px;
+        height: 130px;
+        text-align: center;
+      }
+
+      :host .tile img{
+        width: 50%;
+      }
+
+      :host .tile-anchor {
+        font-size: 0.8em;
+        text-decoration: none;
+        color: inherit;
       }
     </style>
 
     <firebase-query
-      id="article-query"
-      path="[[articlePath.options.published]]"
-      data="{{articles}}"
+      id="open-data-query"
+      path="[[openDataPath.options.published]]"
+      data="{{openData}}"
       order-by-child="[[child]]"
       limit-to-last="[[limit]]">
     </firebase-query>
 
+    <firebase-query
+      id="category-ref"
+      path$="[[categoryPath.categories]]"
+      data="{{categories}}">
+    </firebase-query>
+
     <div class="title">
-      <h1>Articles</h1>
+      <h1>Open Data</h1>
     </div>
+
+    <div class="horizontal layout wrap">
+      <template is="dom-repeat" items="{{categories}}">
+        <div class="flex tile">
+          <div class="horizontal layout">
+            <div class="flex">
+
+            </div>
+            <a href="?child={{item.$key}}" class="tile-anchor">
+              <paper-material class="proper-tile">
+
+                <img src="{{item.icon}}"><br/>
+                {{item.name}}
+
+              </paper-material>
+            </a>
+            <div class="flex">
+
+            </div>
+          </div>
+
+        </div>
+
+      </template>
+    </div>
+
+    <hr/>
 
     <iron-list id="list" items="[]" as="item" scroll-target="[[scrollTarget]]">
       <template>
-        <article-item-component
-          article-id$="{{item.$key}}"
+        <open-data-item-component
+          open-data-id$="{{item.$key}}"
           publish-date$="{{item.value}}"
           roles="[[roles]]"
           user="{{user}}">
-        </article-item-component>
+        </open-data-item-component>
       </template>
     </iron-list>
 
@@ -65,10 +124,10 @@
   <script>
     Polymer({
 
-      is: 'article-list-component',
+      is: 'open-data-list-component',
 
       properties: {
-        articles: {
+        openData: {
           type: Object
         },
         limit: {
@@ -90,40 +149,52 @@
         },
         loadMore: {
           type: Boolean
-        }
+        },
+        route: {
+          type: Object
+        },
+        routeData: {
+          type: Object
+        },
+        subroute: {
+          type: Object
+        },
+        // action: {
+        //   type: String
+        // }
       },
 
       behaviors: [
-        Polymer.ArticleBehavior,
+        Polymer.OpenDataBehavior,
+        Polymer.CategoryBehavior,
         Polymer.UserRoleBehavior
       ],
 
-      // attached: function() {
-      //   console.log('ready')
-      //   firebase.database().ref(this.articlePath.options.published).orderByChild('value').on('child_added', function(snapshot) {
-      //     console.log(snapshot.val().value)
-      //   }.bind(this));
-      // },
-
       observers: [
-        'addToList(articles.splices)'
+        'addToList(openData.splices)',
+        '_routeActionChanged(queryParams)'
       ],
 
+      _routeActionChanged: function(action) {
+        // console.log(action)
+        this.child = action.child || 'value';
+      },
+
       addToList: function(e) {
-        if (e) console.log(e.indexSplices[0].object[e.indexSplices[0].object.length-1].value)
+        // if (e) console.log(e.indexSplices[0].object[e.indexSplices[0].object.length-1].value)
 
         var arr = [];
         // console.log(this.articles)
-        for (var i in this.articles) {
+        for (var i in this.openData) {
           var flag = true;
           for (var j in this.$.list.items) {
-            if (this.$.list.items[j].$key === this.articles[i].$key) {
+            if (this.$.list.items[j].$key === this.openData[i].$key) {
               flag = false;
               break;
             }
           }
           if (flag) {
-            this.$.list.push('items', this.articles[i]);
+            this.$.list.push('items', this.openData[i]);
           }
         }
 
@@ -134,6 +205,13 @@
             if (index >= 0) {
               this.$.list.splice('items', index, 1);
             }
+          }
+        }
+
+        for (var m in this.$.list.items) {
+          if (!this.$.list.items[m][this.child]) {
+            this.$.list.splice('items', m, 1);
+            m--;
           }
         }
 
@@ -151,7 +229,6 @@
         if (this.loadMore) {
           this.limit = this.limit + 10;
         }
-
       }
 
     });

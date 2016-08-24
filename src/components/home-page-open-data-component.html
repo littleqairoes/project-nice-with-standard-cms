@@ -5,11 +5,11 @@
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
 
 <link rel="import" href="../behaviors/user-role-behavior.html">
-<link rel="import" href="../behaviors/article-behavior.html">
+<link rel="import" href="../behaviors/open-data-behavior.html">
 
-<link rel="import" href="article-list-component.html">
+<link rel="import" href="open-data-list-component.html">
 
-<dom-module id="home-page-articles-component">
+<dom-module id="home-page-open-data-component">
   <template>
 
     <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors">
@@ -20,9 +20,9 @@
     </style>
 
     <firebase-query
-      id="article-query"
-      path="[[articlePath.options.published]]"
-      data="{{articles}}"
+      id="open-data-query"
+      path="[[openDataPath.options.published]]"
+      data="{{openData}}"
       order-by-child="[[child]]"
       limit-to-last="5">
     </firebase-query>
@@ -31,20 +31,26 @@
       <div class="flex"></div>
       <div class="flex-4 content">
         <div class="title">
-          <h1>Articles</h1>
+          <h1>Open Data Files</h1>
         </div>
 
-        <template is="dom-repeat" items="{{articles}}">
+        <template is="dom-repeat" items="{{openData}}">
           <template is="dom-if" if="{{_checkChild(item)}}">
-            <article-item-component
-              article-id$="{{item.$key}}"
+            <open-data-item-component
+              open-data-id$="{{item.$key}}"
               publish-date$="{{item.value}}"
               roles="[[roles]]"
               user="{{user}}">
-            </article-item-component>
+            </open-data-item-component>
           </template>
         </template>
       </div>
+      <div class="flex"></div>
+    </div>
+
+    <div class="horizontal layout">
+      <div class="flex"></div>
+
       <div class="flex"></div>
     </div>
 
@@ -54,12 +60,10 @@
   <script>
     Polymer({
 
-      is: 'home-page-articles-component',
+      is: 'home-page-open-data-component',
 
       properties: {
-        articles: {
-          type: Object
-        },
+
         scrollTarget: {
           type: Object
         },
@@ -77,20 +81,17 @@
       ],
 
       _checkChild: function(item) {
-        console.log(item)
-        console.log(item[this.child])
-        console.log(this.child)
         return item[this.child]
       },
 
       _routeActionChanged: function(action) {
-        console.log(action)
+        // console.log(action)
         this.child = action.child || 'value';
       },
 
       behaviors: [
         Polymer.UserRoleBehavior,
-        Polymer.ArticleBehavior
+        Polymer.OpenDataBehavior
       ]
 
     });

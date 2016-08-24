@@ -1,0 +1,264 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-document.html">
+
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/av-icons.html">
+<link rel="import" href="../../bower_components/iron-image/iron-image.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
+<link rel="import" href="../../bower_components/marked-element/marked-element.html">
+<link rel="import" href="../../bower_components/google-youtube/google-youtube.html">
+<link rel="import" href="../../bower_components/paper-tooltip/paper-tooltip.html">
+
+
+<link rel="import" href="../behaviors/utils-behavior.html">
+<link rel="import" href="../behaviors/pages-behavior.html">
+<link rel="import" href="../behaviors/user-role-behavior.html">
+<link rel="import" href="../behaviors/category-behavior.html">
+
+
+
+<dom-module id="about-us-body-component">
+  <template>
+
+    <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors">
+      :host {
+        width: 100%;
+      }
+      :host .article-banner {
+        position: relative;
+      }
+      :host .article-banner .title {
+        position: absolute;
+        bottom: 3em;
+        width: 100%;
+        text-align: center;
+        color: white;
+      }
+      :host .article-banner .title .sub-title {
+        width: 80%;
+        margin-left: 10%;
+        text-align: center;
+        color: white;
+      }
+      :host .article-banner .title h2 {
+        margin-bottom: 0px;
+      }
+      :host .article-banner iron-image {
+        position: relative;
+        width: 100%;
+        height: 300px;
+        background-color: black;
+      }
+      :host .article-banner .banner-overlay {
+        position: absolute;
+        width: 100%;
+        height: 300px;
+        opacity: 0.5;
+        top: 0px;
+        background-color: black;
+      }
+
+      :host .article-body-container {
+        min-width: 300px;
+        max-width: 1000px;
+      }
+
+      :host .article-body {
+        padding: 20px;
+      }
+
+      :host .article-by-line {
+        font-size: 0.8em;
+        margin-bottom: 5px;
+      }
+
+      :host .buttons a {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      :host table {
+        border: 1px solid black;
+        border-spacing: 0px;
+      }
+
+      :host td, th {
+        border: 1px solid black;
+        padding: 10px;
+        margin: 0;
+      }
+
+      :host tr {
+        padding: 0;
+        margin: 0;
+      }
+
+      :host .photoblog-item {
+        min-width: 150px;
+        cursor: pointer;
+      }
+
+      :host .photoblog-item iron-image{
+        width: 100%;
+        height: 150px;
+      }
+
+      :host #video-dialog {
+        width: 70%;
+      }
+
+      :host #photoblog-dialog {
+        width: 70%;
+        max-width: 540px;
+      }
+
+      :host #photoblog-dialog-image {
+        width: 100%;
+        max-width: 500px;
+      }
+
+      :host .caption {
+        text-align: center;
+      }
+
+      :host .article-video-layer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        text-align: center;
+      }
+
+      :host #article-video-play-button {
+        color: white;
+        margin-top: 80px;
+        height: 5em;
+        width: 5em;
+        /*width: 100%;*/
+        /*text-align: center;*/
+        /*color: white;*/
+      }
+
+      :host .category-title {
+        font-size: 0.8em;
+      }
+    </style>
+
+    <firebase-document
+      id="data-ref"
+      data="{{article}}"
+      path$="[[pagePath.aboutUs]]">
+    </firebase-document>
+    <firebase-document
+      id="photoblog-body-ref"
+      path$="[[articlePath.media]]/[[articleId]]"
+      data="{{photoblogData}}">
+    </firebase-document>
+
+    <firebase-document
+      id="category-ref"
+      path$="[[categoryPath.categories]]"
+      data="{{categories}}">
+    </firebase-document>
+
+
+    <div class="article-item">
+      <div class="article-banner">
+        <iron-image
+          src="{{article.header_image}}"
+          sizing="cover"
+          preload
+          fade>
+        </iron-image>
+        <div class="banner-overlay">
+        </div>
+        <div class="title">
+          <h2>{{article.title}}</h2>
+        </div>
+      </div>
+
+      <div class="horizontal layout">
+        <div class="flex"></div>
+        <div class="flex-3 article-body-container">
+          <div class="article-body">
+
+            <div class="article-by-line">
+              Last Edited at: {{renderDate(article.date_published)}}
+            </div>
+            <marked-element markdown="{{article.body}}">
+              <div class="markdown-html"></div>
+            </marked-element>
+            <div class="horizontal layout wrap">
+              <template is="dom-repeat" items="{{photoblog}}">
+                <paper-material class="photoblog-item flex">
+                  <iron-image
+                    src="{{item.downloadURL}}"
+                    data-caption$="{{item.caption}}"
+                    sizing="cover"
+                    preload
+                    fade
+                    on-tap="_openPhotoBlog"
+                  ></iron-image>
+                </paper-material>
+
+              </template>
+            </div>
+          </div>
+          <div class="buttons">
+            <a href="/home-page/">
+              <paper-button>Go back</paper-button>
+            </a>
+            <template is="dom-if" if="{{checkPermission(roles.editor)}}">
+              <template is="dom-if" if="{{isEditorOpen}}">
+                <a href="/about-us-page/view">
+                  <paper-button>Close Editor</paper-button>
+                </a>
+              </template>
+              <template is="dom-if" if="{{!isEditorOpen}}">
+                <a href="/about-us-page/edit">
+                  <paper-icon-button icon="editor:mode-edit"></paper-icon-button>
+                </a>
+              </template>
+            </template>
+          </div>
+        </div>
+        <div class="flex"></div>
+      </div>
+
+    </div>
+
+
+    <paper-toast id="toaster"></paper-toast>
+
+  </template>
+  <script>
+    Polymer({
+
+      is: 'about-us-body-component',
+
+      properties: {
+        article: {
+          type: Object
+        }
+      },
+
+      behaviors: [
+        Polymer.UtilsBehavior,
+        Polymer.CategoryBehavior,
+        Polymer.PagesBehavior,
+        Polymer.UserRoleBehavior
+      ],
+
+      // /(youtu(?:\.be|be\.com)\/(?:.*v(?:\/|=)|(?:.*\/)?)([\w'-]+))/i
+
+    });
+  </script>
+</dom-module>

@@ -17,9 +17,9 @@
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
 
 <link rel="import" href="../behaviors/user-role-behavior.html">
-<link rel="import" href="../behaviors/article-behavior.html">
+<link rel="import" href="../behaviors/open-data-behavior.html">
 
-<dom-module id="article-page">
+<dom-module id="open-data-page">
   <template>
 
     <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors">
@@ -42,6 +42,7 @@
       route="{{route}}"
       pattern="/:pageId"
       data="{{routeData}}"
+      query-params="{{queryParams}}"
       tail="{{subroute}}">
     </app-route>
 
@@ -49,37 +50,38 @@
       role="main"
       selected="[[subpage]]"
       attr-for-selected="name">
-      <article-all-component
+      <open-data-all-component
         name="all"
         route="{{subroute}}"
+        query-params="{{queryParams}}"
         roles="[[roles]]"
         user="{{user}}"
         scroll-target="[[scrollTarget]]">
-      </article-all-component>
-      <article-view-component
+      </open-data-all-component>
+      <open-data-view-component
         name="view"
-        article-id="[[pageId]]"
+        open-data-id="[[pageId]]"
         route="{{subroute}}"
         roles="[[roles]]"
         user="{{user}}"
         scroll-target="[[scrollTarget]]">
-      </article-view-component>
+      </open-data-view-component>
     </iron-pages>
 
     <template is="dom-if" if="{{checkPermission(roles.staff)}}">
       <paper-fab
         id="create-new-fab"
         icon="add"
-        on-tap="openCreateNewDialog"
+        on-tap="openCreateNewDialogOpenData"
         disabled="[[!online]]"
-        aria-label="Add Article">
+        aria-label="Add Create New ">
       </paper-fab>
 
       <paper-dialog
-        id="create-new-dialog"
+        id="create-new-open-data-dialog"
         entry-animation="scale-up-animation"
         exit-animation="fade-out-animation">
-        <h2>New Article</h2>
+        <h2>New Open Data Entry</h2>
         <div>
           <paper-input
             id="create-new-title"
@@ -92,7 +94,7 @@
           <paper-button dialog-dismiss>
             Cancel
           </paper-button>
-          <paper-button on-tap="insertNewArticle" dialog-confirm>
+          <paper-button on-tap="insertNewOpenData" dialog-confirm>
             Create New
           </paper-button>
         </div>
@@ -104,7 +106,7 @@
   <script>
     Polymer({
 
-      is: 'article-page',
+      is: 'open-data-page',
 
       properties: {
         subpage: {
@@ -132,7 +134,7 @@
 
       behaviors: [
         Polymer.UserRoleBehavior,
-        Polymer.ArticleBehavior
+        Polymer.OpenDataBehavior
       ],
 
       observers: [
@@ -149,12 +151,12 @@
 
       _pageChanged: function(page) {
         this.importHref(
-          this.resolveUrl('../components/article-' + page + '-component.html'), null, null, true);
+          this.resolveUrl('../components/open-data-' + page + '-component.html'), null, null, true);
       },
 
-      openCreateNewDialog: function() {
-        if (this.$$('#create-new-dialog')) {
-          this.$$('#create-new-dialog').open();
+      openCreateNewDialogOpenData: function() {
+        if (this.$$('#create-new-open-data-dialog')) {
+          this.$$('#create-new-open-data-dialog').open();
         } else {
           this.$.toaster.show('Error: No dialog box exists. Please report to us for this bug');
         }
