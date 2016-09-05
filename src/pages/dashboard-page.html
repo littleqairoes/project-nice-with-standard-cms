@@ -14,6 +14,7 @@
 <link rel="import" href="../../bower_components/neon-animation/animations/fade-out-animation.html">
 
 <link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
 
 <link rel="import" href="../behaviors/user-role-behavior.html">
 <link rel="import" href="../behaviors/article-behavior.html">
@@ -24,6 +25,10 @@
   <template>
 
     <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors">
+      :host {
+        background: #ffffff;
+      }
+
       paper-fab {
         position: fixed;
         bottom: 2em;
@@ -37,23 +42,48 @@
       paper-dialog {
         width: 70%;
       }
+
+      :host .side-bar {
+        min-width: 300px;
+      }
+
+      :host .main-content {
+        min-width: 300px;
+      }
     </style>
 
-    <div class="horizontal layout">
-      <div class="flex">
-        <h2>
-          Pending Items:
-        </h2>
+    <app-route
+      route="{{route}}"
+      pattern="/:pageId"
+      data="{{routeData}}"
+      tail="{{subroute}}">
+    </app-route>
 
+    <div class="horizontal layout">
+      <div class="flex side-bar">
+        <paper-menu attr-for-selected="name" selected="{{subpage}}" role="navigation" class="drawer-list">
+          <a href="/dashboard-page/dashboard" name="root" tabindex="-1">
+            <paper-item>Dashboard Home</paper-item>
+          </a>
+          <a href="/dashboard-page/pending-articles" name="article" tabindex="-1">
+            <paper-item>Pending Articles</paper-item>
+          </a>
+          <a href="/dashboard-page/pending-open-data" name="open-data" tabindex="-1">
+            <paper-item>Pending Open Data Entries</paper-item>
+          </a>
+          <a href="/dashboard-page/pending-members" name="members" tabindex="-1">
+            <paper-item>Member Requests</paper-item>
+          </a>
+        </paper-menu>
       </div>
-      <draft-article-list-component
-        class="flex-4"
-        limit="5"
-        roles="[[roles]]"
-        user="{{user}}"
-        scroll-target="[[scrollTarget]]"
-        load-more>
-      </draft-article-list-component>
+      <div class="flex-3 main-content">
+        <iron-pages
+          role="main"
+          selected="[[subpage]]"
+          attr-for-selected="name">
+
+        </iron-pages>
+      </div>
     </div>
 
     <paper-toast id="toaster"></paper-toast>
@@ -74,6 +104,34 @@
         Polymer.ArticleBehavior
       ],
 
+      _routePageIdChanged: function(id) {
+        this.pageId = id;
+      },
+
+      _checkIdExists: function(id) {
+        this.subpage = id || 'root';
+      },
+
+      _pageChanged: function(page) {
+        this.importHref(
+          this.resolveUrl('../components/dashboard-' + page + '-component.html'), null, null, true);
+      },
+
     });
   </script>
 </dom-module>
+
+<!--<div class="flex">-->
+      <!--  <h2>-->
+      <!--    Pending Items:-->
+      <!--  </h2>-->
+
+      <!--</div>-->
+      <!--<draft-article-list-component-->
+      <!--  class="flex-4"-->
+      <!--  limit="5"-->
+      <!--  roles="[[roles]]"-->
+      <!--  user="{{user}}"-->
+      <!--  scroll-target="[[scrollTarget]]"-->
+      <!--  load-more>-->
+      <!--</draft-article-list-component>-->

@@ -19,65 +19,32 @@
 
 
 <link rel="import" href="../behaviors/utils-behavior.html">
-<link rel="import" href="../behaviors/pages-behavior.html">
 <link rel="import" href="../behaviors/user-role-behavior.html">
-<link rel="import" href="../behaviors/category-behavior.html">
 
 
 
-<dom-module id="about-us-body-component">
+<dom-module id="profile-body-component">
   <template>
 
     <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors">
       :host {
         width: 100%;
       }
-      :host .article-banner {
-        position: relative;
-      }
-      :host .article-banner .title {
-        position: absolute;
-        bottom: 3em;
-        width: 100%;
-        text-align: center;
-        color: white;
-      }
-      :host .article-banner .title .sub-title {
-        width: 80%;
-        margin-left: 10%;
-        text-align: center;
-        color: white;
-      }
-      :host .article-banner .title h2 {
-        margin-bottom: 0px;
-      }
-      :host .article-banner iron-image {
-        position: relative;
-        width: 100%;
-        height: 300px;
-        background-color: black;
-      }
-      :host .article-banner .banner-overlay {
-        position: absolute;
-        width: 100%;
-        height: 300px;
-        opacity: 0.5;
-        top: 0px;
-        background-color: black;
+
+      :host .profile-header-container {
+        background-color: #BBBBBB;
+        padding: 10px;
       }
 
-      :host .article-body-container {
+      :host .profile-header, .profile-body {
         min-width: 300px;
         max-width: 1000px;
       }
 
-      :host .article-body {
-        padding: 20px;
-      }
-
-      :host .article-by-line {
-        font-size: 0.8em;
-        margin-bottom: 5px;
+      :host .profile-picture {
+        width: 200px;
+        height: 200px;
+        margin-right: 20px;
       }
 
       :host .buttons a {
@@ -111,10 +78,6 @@
         height: 150px;
       }
 
-      :host #video-dialog {
-        width: 70%;
-      }
-
       :host #photoblog-dialog {
         width: 70%;
         max-width: 540px;
@@ -129,62 +92,104 @@
         text-align: center;
       }
 
-      :host .article-video-layer {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        text-align: center;
-      }
-
-      :host #article-video-play-button {
-        color: white;
-        margin-top: 80px;
-        height: 5em;
-        width: 5em;
-        /*width: 100%;*/
-        /*text-align: center;*/
-        /*color: white;*/
-      }
-
       :host .category-title {
         font-size: 0.8em;
+      }
+
+      :host .profile-body-text {
+        min-width: 300px;
       }
     </style>
 
     <firebase-document
       id="data-ref"
-      data="{{article}}"
-      path$="[[pagePath.aboutUs]]">
+      data="{{profile}}"
+      path$="[[userPath.profiles]]/[[user.uid]]">
+    </firebase-document>
+    <firebase-document
+      id="media-body-ref"
+      path$="[[userPath.media]]/[[user.uid]]"
+      data="{{media}}">
     </firebase-document>
 
-    <template is="dom-if" if="{{_forceZero(article)}}">
-      <div class="article-item">
-        <div class="article-banner">
-          <iron-image
-            src="{{article.header_image}}"
-            sizing="cover"
-            preload
-            fade>
-          </iron-image>
-          <div class="banner-overlay">
-          </div>
-          <div class="title">
-            <h2>{{article.title}}</h2>
+    <firebase-document
+      id="category-ref"
+      path$="[[userPath.categories]]"
+      data="{{categories}}">
+    </firebase-document>
+
+    <template is="dom-if" if="{{_forceZero(profile)}}">
+      <div class="horizontal layout profile-header-container">
+        <div class="flex"></div>
+        <div class="flex-3 profile-header">
+          <div class="horizontal layout center">
+            <iron-image
+              class="profile-picture"
+              sizing="cover"
+              src="{{profile.image}}"
+              preload
+              fade
+            >
+            </iron-image>
+            <div class="flex">
+              <h2 class="profile-name">{{profile.displayName}}</h2>
+              <div class="horizontal layout">
+                <div class="category-title">
+                  Category:
+                </div>
+                <template is="dom-repeat" items="{{_getCategory(categories)}}">
+                  <div class="category">
+
+                  </div>
+                </template>
+              </div>
+            </div>
           </div>
         </div>
+        <div class="flex"></div>
+      </div>
 
-        <div class="horizontal layout">
-          <div class="flex"></div>
-          <div class="flex-3 article-body-container">
-            <div class="article-body">
-
-              <!--<div class="article-by-line">-->
-              <!--  Last Edited at: {{renderDate(article.date_published)}}-->
-              <!--</div>-->
+      <div class="horizontal layout profile-body-container">
+        <div class="flex"></div>
+        <div class="flex-3 profile-body">
+          <div class="horizontal layout">
+            <div class="flex-3 profile-body-text">
+              <h3>Professional Bio: </h3>
               <marked-element markdown="{{article.body}}">
                 <div class="markdown-html"></div>
               </marked-element>
+              <div class="buttons">
+                <template is="dom-if" if="{{!checkPermission(roles.member)}}">
+                  <template is="dom-if" if="{{!checkPermission(roles.pending)}}">
+                    <paper-button>Request for Membership</paper-button>
+                  </template>
+                  <template is="dom-if" if="{{checkPermission(roles.pending)}}">
+                    <paper-button>Cancel Request for Membership</paper-button>
+                  </template>
+                </template>
+
+              </div>
+              <div class="buttons">
+
+                <a href="/home-page/">
+                  <paper-button>Go back</paper-button>
+                </a>
+                <template is="dom-if" if="{{user}}">
+                  <template is="dom-if" if="{{isEditorOpen}}">
+                    <a href="/profile-page/view">
+                      <paper-button>Close Editor</paper-button>
+                    </a>
+                  </template>
+                  <template is="dom-if" if="{{!isEditorOpen}}">
+                    <a href="/profile-page/edit">
+                      <paper-icon-button icon="editor:mode-edit"></paper-icon-button>
+                    </a>
+                  </template>
+                </template>
+              </div>
+            </div>
+            <div class="flex-2">
+              <h3>Profile Album: </h3>
               <div class="horizontal layout wrap">
                 <template is="dom-repeat" items="{{photoblog}}">
                   <paper-material class="photoblog-item flex">
@@ -197,39 +202,19 @@
                       on-tap="_openPhotoBlog"
                     ></iron-image>
                   </paper-material>
-
                 </template>
               </div>
             </div>
-            <div class="buttons">
-              <a href="/home-page/">
-                <paper-button>Go back</paper-button>
-              </a>
-              <template is="dom-if" if="{{checkPermission(roles.editor)}}">
-                <template is="dom-if" if="{{isEditorOpen}}">
-                  <a href="/about-us-page/view">
-                    <paper-button>Close Editor</paper-button>
-                  </a>
-                </template>
-                <template is="dom-if" if="{{!isEditorOpen}}">
-                  <a href="/about-us-page/edit">
-                    <paper-icon-button icon="editor:mode-edit"></paper-icon-button>
-                  </a>
-                </template>
-              </template>
-            </div>
           </div>
-          <div class="flex"></div>
         </div>
-
+        <div class="flex"></div>
       </div>
     </template>
-
-    <template is="dom-if" if="{{!_forceZero(article)}}">
+    <template is="dom-if" if="{{!_forceZero(profile)}}">
       <div class="horizontal layout">
         <div class="flex"></div>
         <div class="center flex" style="margin-top: 200px; text-align: center">
-          <paper-spinner alt="Loading the Page" active></paper-spinner>
+          <paper-spinner alt="Loading Profile" active></paper-spinner>
         </div>
         <div class="flex"></div>
       </div>
@@ -242,19 +227,33 @@
   <script>
     Polymer({
 
-      is: 'about-us-body-component',
+      is: 'profile-body-component',
 
       properties: {
-        article: {
+        profile: {
           type: Object
         }
       },
 
+      observers: [
+        'check(profile)'
+      ],
+
       behaviors: [
         Polymer.UtilsBehavior,
-        Polymer.PagesBehavior,
         Polymer.UserRoleBehavior
       ],
+
+      check: function(o) {
+        console.log(o)
+      },
+
+      _getCategory: function(c) {
+        var arr = [];
+        for (var i in c) {
+          arr.push(c[i]);
+        }
+      }
 
       // /(youtu(?:\.be|be\.com)\/(?:.*v(?:\/|=)|(?:.*\/)?)([\w'-]+))/i
 

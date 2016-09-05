@@ -55,15 +55,15 @@
         position: relative;
         width: 100%;
         height: 300px;
-        background-color: black;
+        background-color: green;
       }
       :host .article-banner .banner-overlay {
         position: absolute;
         width: 100%;
         height: 300px;
-        opacity: 0.5;
+        opacity: 0.3;
         top: 0px;
-        background-color: black;
+        background-color: green;
       }
 
       :host .article-body-container {
@@ -358,6 +358,21 @@
         '_checkPhotoBlogData(photoblogData)',
         '_checkCategories(article.categories)'
       ],
+
+      ready: function() {
+        setTimeout(function() {
+          if (!this.isEditorOpen) {
+            firebase.database().ref(this.articlePath.options.views + '/' + this.articleId + '/value').transaction(function(value) {
+              if (value) {
+                return value + 1
+              }
+              return 1;
+            }).catch(function(error) {
+              console.log(error)
+            });
+          }
+        }.bind(this), 1000);
+      },
 
       _checkPhotoBlogData: function(e) {
         this.photoblog = [];

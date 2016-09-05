@@ -76,6 +76,16 @@
         padding-right: 10px;
         font-size: 0.8em;
       }
+
+      :host .anchorage {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      :host .anchorage:hover .banner-overlay {
+        background-color: green;
+      }
+
     </style>
 
     <firebase-document
@@ -90,36 +100,39 @@
     </firebase-document>
 
     <template is="dom-if" if="{{_forceZero(article)}}">
-      <div class="article-item">
-        <div class="article-banner">
-          <iron-image
-            src="{{article.header_image}}"
-            sizing="cover"
-            preload
-            fade>
-          </iron-image>
-          <div class="banner-overlay"></div>
-          <div class="title">
-            <h2><a href="/article-page/[[articleId]]/view">{{article.title}}</a></h2>
-            <div class="sub-title">
-              {{article.sub_title}}
-            </div>
-            <div class="article-by-line">
-              Last Edited at: {{renderDate(article.date_published)}}
-            </div>
-            <div class="buttons">
-              <a href="/article-page/[[articleId]]/view">
-                <paper-button>Read Me</paper-button>
-              </a>
-              <template is="dom-if" if="{{checkPermission(roles.staff)}}">
-                <a href="/article-page/[[articleId]]/edit">
-                  <paper-icon-button icon="editor:mode-edit"></paper-icon-button>
-                </a>
+      <a href="/article-page/[[articleId]]/view" class="anchorage">
+        <div class="article-item">
+          <div class="article-banner">
+            <iron-image
+              src="{{article.header_image}}"
+              sizing="cover"
+              preload
+              fade>
+            </iron-image>
+            <div class="banner-overlay"></div>
+            <div class="title">
+              <h2>{{article.title}}</h2>
+              <div class="sub-title">
+                {{article.sub_title}}
+              </div>
+              <div class="article-by-line">
+                Last Edited at: {{renderDate(article.date_published)}}
+              </div>
+              <div class="buttons">
+                <!--<a href="/article-page/[[articleId]]/view">-->
+                <!--  <paper-button>Read Me</paper-button>-->
+                <!--</a>-->
+                <template is="dom-if" if="{{checkPermission(roles.staff)}}">
+                  <a href="/article-page/[[articleId]]/edit">
+                    <paper-icon-button icon="editor:mode-edit"></paper-icon-button>
+                  </a>
 
-              </template>
+                </template>
+              </div>
             </div>
+          </div>
         </div>
-      </div>
+      </a>
     </template>
 
   </template>

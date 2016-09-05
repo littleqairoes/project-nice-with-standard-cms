@@ -114,6 +114,12 @@
         path="[[userPath.options.member]]/[[user.uid]]"
         data="{{memberRole}}">
       </firebase-document>
+
+      <firebase-document
+        id="user-member-ref"
+        path="[[userPath.options.pending]]/[[user.uid]]"
+        data="{{pendingRole}}">
+      </firebase-document>
     </template>
 
     <app-scrollpos-control selected="{{page}}"></app-scrollpos-control>
@@ -133,7 +139,7 @@
         <app-toolbar>{{appTitle}}</app-toolbar>
         <paper-menu attr-for-selected="name" selected="{{page}}" role="navigation" class="drawer-list">
           <template is="dom-repeat" items="{{menu}}">
-            <template is="dom-if" if="{{checkMenu(item, user)}}">
+            <template is="dom-if" if="{{checkMenu(item, user, roles, memberRole)}}">
               <a href="{{item.href}}" name="{{item.name}}" tabindex="-1">
                 <paper-item>{{item.label}}</paper-item>
               </a>
@@ -152,7 +158,7 @@
             <div title>{{appHeaderTitle}}</div>
             <paper-tabs attr-for-selected="name" selected="{{page}}" role="navigation" class$="{{showHeaderMenu}}">
               <template is="dom-repeat" items="{{menu}}">
-                <template is="dom-if" if="{{checkMenu(item, user)}}">
+                <template is="dom-if" if="{{checkMenu(item, user, roles, memberRole)}}">
                   <paper-tab name="{{item.name}}" >
                     <a href="{{item.href}}" class="link" tabindex="-1">
                       {{item.label}}
@@ -211,6 +217,18 @@
             user="{{user}}"
             roles="[[roles]]">
           </about-us-page>
+          <profile-page
+            name="profile-page"
+            route="{{subroute}}"
+            user="{{user}}"
+            roles="[[roles]]">
+          </profile-page>
+          <dashboard-page
+            name="dashboard-page"
+            route="{{subroute}}"
+            user="{{user}}"
+            roles="[[roles]]">
+          </dashboard-page>
         </iron-pages>
 
       </app-header-layout>
@@ -308,7 +326,13 @@
             label: 'Contact Us',
             name: 'contact-page',
           },
-
+          {
+            href: '/members/',
+            label: 'Members',
+            name: 'members-page',
+            auth: true,
+            role: 'members'
+          },
           {
             href: '/dashboard-page/',
             label: 'Dashboard',
@@ -358,10 +382,15 @@
       },
 
       _onQueryMatchesChangedTitle: function(e) {
-        this.appHeaderTitle = !e.detail.value ? 'Network of Information and Collaboration Exchange' : 'N.I.C.E'
+        this.appHeaderTitle = !e.detail.value ? 'Network of Information and Collaboration Exchange' : 'N.I.C.E';
       },
 
-      checkMenu: function(item, user) {
+      checkMenu: function(item, user, roles) {
+        if (item.role) {
+          if (item.role === 'members') {
+            return (!item.auth || user) && roles.member
+          }
+        }
         return !item.auth || user;
       },
 

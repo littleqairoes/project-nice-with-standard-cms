@@ -81,9 +81,9 @@
         color: inherit;
       }
 
-      :host .title-anchor:hover {
-        text-decoration: underline;
-      }
+      /*:host .title-anchor:hover {*/
+      /*  text-decoration: underline;*/
+      /*}*/
     </style>
 
     <firebase-document
@@ -145,11 +145,11 @@
               </div>
             </div>
             <div class="buttons">
-              <a href$="/article-page/[[articleId]]/view">
-                <paper-button raised>
-                  Read More...
-                </paper-button>
-              </a>
+              <!--<a href$="/article-page/[[articleId]]/view">-->
+              <!--  <paper-button raised>-->
+              <!--    Read More...-->
+              <!--  </paper-button>-->
+              <!--</a>-->
               <template is="dom-if" if="{{checkPermissionWithOwner(roles.staff, owner)}}">
                 <a href$="/article-page/[[articleId]]/edit">
                    <paper-icon-button icon="editor:mode-edit"></paper-icon-button>

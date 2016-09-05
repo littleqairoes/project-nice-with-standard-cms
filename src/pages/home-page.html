@@ -71,30 +71,37 @@
         <h2>
           Browse Topics:
         </h2>
-        <div class="horizontal layout wrap">
-          <template is="dom-repeat" items="{{categories}}">
-            <div class="flex tile">
-              <div class="horizontal layout">
-                <div class="flex">
+        <div class="horiztonal layout">
+          <div class="flex"></div>
+          <div class="flex-3">
+            <div class="horizontal layout wrap">
+              <template is="dom-repeat" items="{{categories}}">
+                <div class=" tile">
+
+                  <!--<div class="flex">-->
+
+                  <!--</div>-->
+                  <a href="?child={{item.$key}}" class="tile-anchor">
+                    <paper-material class="proper-tile">
+
+                      <img src="{{item.icon}}"><br/>
+                      {{item.name}}
+
+                    </paper-material>
+                  </a>
+                  <!--<div class="flex">-->
+
+                  <!--</div>-->
+
 
                 </div>
-                <a href="?child={{item.$key}}" class="tile-anchor">
-                  <paper-material class="proper-tile">
 
-                    <img src="{{item.icon}}"><br/>
-                    {{item.name}}
-
-                  </paper-material>
-                </a>
-                <div class="flex">
-
-                </div>
-              </div>
-
+              </template>
             </div>
-
-          </template>
+          </div>
+          <div class="flex"></div>
         </div>
+
       </div>
       <div class="flex">
 

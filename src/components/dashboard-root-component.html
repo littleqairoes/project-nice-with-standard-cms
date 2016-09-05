@@ -1,0 +1,88 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../../bower_components/app-route/app-route.html">
+<link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
+
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+
+
+<link rel="import" href="../behaviors/user-role-behavior.html">
+
+<dom-module id="dashboard-root-component">
+  <template>
+
+    <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors">
+      :host {
+        background: #ffffff;
+      }
+
+      paper-fab {
+        position: fixed;
+        bottom: 2em;
+        right: 2em;
+      }
+
+      paper-fab.label {
+        font-size: 20px;
+      }
+
+      paper-dialog {
+        width: 70%;
+      }
+
+      :host .side-bar {
+        min-width: 300px;
+      }
+
+      :host .main-content {
+        min-width: 300px;
+      }
+    </style>
+
+    <div class="horizontal layout">
+      <div class="flex side-bar">
+
+      </div>
+      <div class="flex-3 main-content">
+
+      </div>
+    </div>
+
+    <paper-toast id="toaster"></paper-toast>
+  </template>
+  <script>
+    Polymer({
+
+      is: 'dashboard-root-component',
+
+      properties: {
+        scrollTarget: {
+          type: Object
+        }
+      },
+
+      behaviors: [
+        Polymer.UserRoleBehavior,
+      ],
+
+    });
+  </script>
+</dom-module>
+
+<!--<div class="flex">-->
+      <!--  <h2>-->
+      <!--    Pending Items:-->
+      <!--  </h2>-->
+
+      <!--</div>-->
+      <!--<draft-article-list-component-->
+      <!--  class="flex-4"-->
+      <!--  limit="5"-->
+      <!--  roles="[[roles]]"-->
+      <!--  user="{{user}}"-->
+      <!--  scroll-target="[[scrollTarget]]"-->
+      <!--  load-more>-->
+      <!--</draft-article-list-component>-->
