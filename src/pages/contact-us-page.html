@@ -1,0 +1,94 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-query.html">
+
+<link rel="import" href="../../bower_components/app-route/app-route.html">
+
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../behaviors/pages-behavior.html">
+<link rel="import" href="../behaviors/user-role-behavior.html">
+
+<link rel="import" href="../components/contact-us-body-component.html">
+<link rel="import" href="../components/contact-us-form-component.html">
+
+<dom-module id="contact-us-page">
+  <template>
+
+    <style is="custom-style" include="iron-flex iron-flex-alignment iron-flex-factors">
+
+    </style>
+
+    <app-route
+      route="{{route}}"
+      pattern="/:action"
+      data="{{routeData}}"
+      tail="{{subroute}}">
+    </app-route>
+
+    <div class="layout horizontal wrap">
+      <template is="dom-if" if="{{_checkAction(action)}}">
+        <contact-us-form-component
+          article-id="[[articleId]]"
+          roles="[[roles]]"
+          user="{{user}}">
+        </contact-us-form-component>
+      </template>
+
+      <div class="flex" style="min-width: 300px">
+        <contact-us-body-component
+          article-id="[[articleId]]"
+          roles="[[roles]]"
+          action="[[action]]"
+          user="{{user}}"
+          is-editor-open="[[isEditorOpen]]">
+        </contact-us-body-component>
+      </div>
+    </div>
+  </template>
+  <script>
+    Polymer({
+
+      is: 'contact-us-page',
+
+      properties: {
+        isEditorOpen: {
+          type: Boolean,
+          value: false,
+          computed: '_checkAction(action)'
+        },
+        route: {
+          type: Object
+        },
+        routeData: {
+          type: Object
+        },
+        subroute: {
+          type: Object
+        },
+        action: {
+          type: String
+        }
+      },
+
+      observers: [
+        '_routeActionChanged(routeData.action)'
+      ],
+
+      behaviors: [
+        Polymer.PagesBehavior,
+        Polymer.UserRoleBehavior
+      ],
+
+      _routeActionChanged: function(action) {
+        console.log(action)
+        this.action = action || 'view';
+      },
+
+      _checkAction: function(a) {
+        return a === 'edit';
+      },
+
+    });
+  </script>
+</dom-module>

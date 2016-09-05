@@ -104,6 +104,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       data="{{draftOption}}"
       path="[[openDataPath.options.draft]]/[[openDataId]]">
     </firebase-document>
+    <firebase-document
+      id="infograph-ref"
+      data="{{infographOption}}"
+      path="[[openDataPath.options.infograph]]/[[openDataId]]">
+    </firebase-document>
 
     <firebase-storage
       id="media-storage"
@@ -219,6 +224,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               on-change="onFrontPublish"
             ></paper-toggle-button>
           </div>
+          <div class="horizontal layout" style="padding: 10px">
+            <span style="padding-right: 10px">
+              Infograph:
+            </span>
+            <paper-toggle-button
+              id="infograph"
+              on-change="onInfograph"
+            ></paper-toggle-button>
+          </div>
         </form>
       </div>
 
@@ -253,6 +267,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       observers: [
         '_checkPublish(publishOption.value)',
         '_checkFront(publishOption.front)',
+        '_checkInfograph(infographOption.value)',
         '_checkMediaUploads(mediaUploads.splices)',
         '_checkOpenData(openData.*)',
         '_checkTags(article.tagwords)',
@@ -292,6 +307,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         if (this.$$('#front')) {
           this.$$('#front').checked = this._forceZero(o, false);
+        }
+      },
+
+      _checkInfograph: function(o) {
+
+        if (this.$$('#infograph')) {
+          this.$$('#infograph').checked = this._forceZero(o, false);
         }
       },
 
@@ -413,6 +435,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           })
         } else {
           firebase.database().ref(this.$$('#published-ref').path + '/front').remove()
+        }
+      },
+
+      onInfograph: function(e) {
+        var checked = e.target.checked;
+        var message = e.target.checked ? 'Made as Infograph' : 'Removed from Infograph list';
+        var updates = {};
+        var obj = {
+          value: this._todayUTC
+        }
+        if (checked) {
+          updates[this.$$('#infograph-ref').path] = obj
+          firebase.database().ref().update(updates).then(function() {
+            this.$.toaster.show(message);
+            this._setDatePublished()
+          }.bind(this)).catch(this._catchError.bind(this))
+        } else {
+          firebase.database().ref(this.$$('#infograph-ref').path + '/value').remove().then(function() {
+            this.$.toaster.show(message);
+          }.bind(this)).catch(this._catchError.bind(this))
         }
       },
 
