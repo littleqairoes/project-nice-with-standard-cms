@@ -82,9 +82,10 @@
       },
 
       checkPermission: function(r) {
+
         var u = this.user;
         var o = this.online;
-        return u && u.uid && o && r;
+        return u && u.uid && o && this._forceZero(r, false);
       },
 
       checkPermissionWithOwner: function(r, owner) {
@@ -92,6 +93,13 @@
         var o = this.online;
         return u && u.uid && o && (r || (owner.owner === u.uid));
         // return ((r || o) || (u && owner && owner.owner === u.uid)) && (u && u.uid) && s;
+      },
+
+      refreshRoles: function() {
+        // setTimeout(function(){
+          this._setRole(this.adminRole, this.editorRole, this.staffRole, this.memberRole)
+        // }.bind(this), 120)
+
       },
 
       _setRole: function(a, e, s, m) {
@@ -134,6 +142,7 @@
         if (this.$.auth) {
           this.$.auth.signOut().then(function() {
             this.$.toaster.show('Goodbye!');
+            window.location.assign('/')
           }.bind(this)).catch(this._catchError.bind(this));
         } else {
           this.$.toaster.show('You are already logged out.');

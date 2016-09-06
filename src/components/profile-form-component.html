@@ -15,6 +15,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 <link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
 <link rel="import" href="../../bower_components/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../../bower_components/iron-icons/image-icons.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
@@ -154,6 +155,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </div>
           </template>
           <hr/>
+          <paper-input
+            name="profile-address"
+            id="profile-address"
+            label="Address"
+            value="{{profile.address}}">
+          </paper-input>
+          <paper-input
+            name="profile-contact"
+            id="profile-contact"
+            label="Contact Number"
+            value="{{profile.contact}}">
+          </paper-input>
           <paper-textarea
             id="body"
             label="Body"
@@ -204,17 +217,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
               <paper-icon-button data-index$="{{item.$key}}" data-path$="{{item.fullPath}}" icon="icons:delete" on-tap="_deletePhotoblogFile" raised></paper-icon-button>
             </div>
           </template>
-
+          <h4>Category:</h4>
           <div class="horizontal layout wrap">
             <template is="dom-repeat" items="{{categories}}">
               <div style="position: relative">
-                <paper-icon-button
-                  active$="{{_checkCategories(article.categories, item.$key)}}"
+                <paper-button
+                  active$="{{_checkCategories(profile.categories, item.$key)}}"
                   on-tap="_tapCategory"
                   id="{{item.$key}}"
                   src="{{item.icon}}"
                   toggles
-                  class="category-icon"></paper-icon-button>
+                  class="category-icon flex">{{item.name}}</paper-button>
                 <paper-tooltip for="{{item.$key}}">{{item.name}}</paper-tooltip>
               </div>
             </template>
@@ -265,7 +278,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       ],
 
       _checkArticle: function(e) {
-        if (e.path !== 'article') {
+        console.log(e.path)
+        if (e.path !== 'profile') {
           this._setDatePublished();
         }
       },
@@ -490,19 +504,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           firebase.database().ref(this.$$('#data-ref').path + '/categories/' + id).set({
             value: true
           }).then(function(){
-            if (this.publishOption.value) {
-              return firebase.database().ref(this.$$('#published-ref').path + '/' + id).set(this._todayUTC)
-            } else if (this.draftOption.value) {
-              return firebase.database().ref(this.$$('#draft-ref').path + '/' + id).set(this._todayUTC)
-            }
+
           }.bind(this)).catch(this._catchError.bind(this));
         } else {
           firebase.database().ref(this.$$('#data-ref').path + '/categories/' + id).remove().then(function(){
-            if (this.publishOption.value) {
-              return firebase.database().ref(this.$$('#published-ref').path + '/' + id).remove()
-            } else if (this.draftOption.value) {
-              return firebase.database().ref(this.$$('#draft-ref').path + '/' + id).remove()
-            }
+
           }.bind(this)).catch(this._catchError.bind(this));
         }
       }

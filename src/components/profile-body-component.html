@@ -99,6 +99,19 @@
       :host .profile-body-text {
         min-width: 300px;
       }
+
+      :host .by-line {
+        font-size: 0.8em;
+      }
+
+      :host .category {
+        font-size: 0.8em;
+        margin-left: 5px;
+      }
+
+      :host .profile-name {
+        margin-bottom: 0px;
+      }
     </style>
 
     <firebase-document
@@ -133,16 +146,21 @@
             </iron-image>
             <div class="flex">
               <h2 class="profile-name">{{profile.displayName}}</h2>
+              <div class="by-line horizontal layout">
+                Email: {{profile.email}}
+              </div>
+              <template is="dom-if" if="{{profile.contact}}">
+                <div class="by-line horizontal layout">
+                  Contact Number: {{profile.contact}}
+                </div>
+              </template>
+              <hr/>
               <div class="horizontal layout">
                 <div class="category-title">
-                  Category:
+                  Category: {{_getCategory(profile, categories)}}
                 </div>
-                <template is="dom-repeat" items="{{_getCategory(categories)}}">
-                  <div class="category">
-
-                  </div>
-                </template>
               </div>
+
             </div>
           </div>
         </div>
@@ -154,17 +172,22 @@
         <div class="flex-3 profile-body">
           <div class="horizontal layout">
             <div class="flex-3 profile-body-text">
-              <h3>Professional Bio: </h3>
-              <marked-element markdown="{{article.body}}">
+
+              <h3>Address:</h3>
+              <div class="address">
+                {{profile.address}}
+              </div>
+              <h3>About me:</h3>
+              <marked-element markdown="{{profile.body}}">
                 <div class="markdown-html"></div>
               </marked-element>
               <div class="buttons">
                 <template is="dom-if" if="{{!checkPermission(roles.member)}}">
                   <template is="dom-if" if="{{!checkPermission(roles.pending)}}">
-                    <paper-button>Request for Membership</paper-button>
+                    <paper-button on-tap="requestPending">Request for Membership</paper-button>
                   </template>
                   <template is="dom-if" if="{{checkPermission(roles.pending)}}">
-                    <paper-button>Cancel Request for Membership</paper-button>
+                    <paper-button on-tap="cancelPending">Cancel Request for Membership</paper-button>
                   </template>
                 </template>
 
@@ -236,7 +259,7 @@
       },
 
       observers: [
-        'check(profile)'
+        // 'check(profile)'
       ],
 
       behaviors: [
@@ -248,12 +271,39 @@
         console.log(o)
       },
 
-      _getCategory: function(c) {
+      _getCategory: function(p, d) {
+        var c = p.categories;
+        if (!c) return '';
         var arr = [];
         for (var i in c) {
-          arr.push(c[i]);
+          // console.log(c[i], i)
+          if (d[i] && c[i].value) {
+            arr.push(d[i].name)
+          }
         }
-      }
+        return arr.join(', ')
+      },
+
+      _categoryName: function(categories, key) {
+        console.log(categories, key)
+        if (categories[key]) {
+          return categories[key].name
+        }
+      },
+
+      requestPending: function() {
+        firebase.database().ref(this.userPath.options.pending + '/' + this.user.uid).set({
+          value: this._todayUTC
+        }).then(function() {
+          this.$.toaster.show('Request for membership has been sent')
+        }.bind(this)).catch(this._catchError.bind(this));
+      },
+
+      cancelPending: function() {
+        firebase.database().ref(this.userPath.options.pending + '/' + this.user.uid).remove().then(function() {
+          this.$.toaster.show('Request for membership has been sent')
+        }.bind(this)).catch(this._catchError.bind(this));
+      },
 
       // /(youtu(?:\.be|be\.com)\/(?:.*v(?:\/|=)|(?:.*\/)?)([\w'-]+))/i
 

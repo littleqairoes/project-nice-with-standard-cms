@@ -154,8 +154,11 @@
         <app-header condenses reveals effects="waterfall" id="header">
           <app-toolbar>
             <paper-icon-button icon="menu" drawer-toggle class$="{{showMenuButton}}"></paper-icon-button>
-            <img src="{{appLogo}}" class="app-logo">
-            <div title>{{appHeaderTitle}}</div>
+            <a href="/">
+              <img src="{{appLogo}}" class="app-logo">
+            </a>
+            <div title><a href="/" style="color: inherit; text-decoration: none">{{appHeaderTitle}}</a></div>
+
             <paper-tabs attr-for-selected="name" selected="{{page}}" role="navigation" class$="{{showHeaderMenu}}">
               <template is="dom-repeat" items="{{menu}}">
                 <template is="dom-if" if="{{checkMenu(item, user, roles, memberRole)}}">
@@ -293,6 +296,13 @@
 
         showHeaderMenu: {
           type: String
+        },
+
+        memberRole: {
+          type: Object,
+          value: function() {
+            return {}
+          }
         }
 
       },
@@ -337,13 +347,14 @@
             label: 'Members',
             name: 'members-page',
             auth: true,
-            role: 'members'
+            role: 'member'
           },
           {
             href: '/dashboard-page/',
             label: 'Dashboard',
             name: 'dashboard-page',
-            auth: true
+            auth: true,
+            role: 'admin'
           },
           {
             href: '/profile-page/',
@@ -392,12 +403,11 @@
       },
 
       checkMenu: function(item, user, roles) {
+        // this.refreshRoles();
         if (item.role) {
-          if (item.role === 'members') {
-            return (!item.auth || user) && roles.member
-          }
+          return item.auth && user && roles[item.role]
         }
-        return !item.auth || user;
+        return (item.auth && user) || (!item.auth && !user) || user;
       },
 
       _getScrollTarget: function() {
