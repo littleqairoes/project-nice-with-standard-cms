@@ -19,7 +19,6 @@
 <link rel="import" href="../behaviors/user-role-behavior.html">
 <link rel="import" href="../behaviors/article-behavior.html">
 
-<link rel="import" href="../components/draft-article-list-component.html">
 
 <dom-module id="dashboard-page">
   <template>
@@ -56,22 +55,23 @@
       route="{{route}}"
       pattern="/:pageId"
       data="{{routeData}}"
-      tail="{{subroute}}">
+      tail="{{subroute}}"
+      query-params="{{queryParams}}">
     </app-route>
 
     <div class="horizontal layout">
       <div class="flex side-bar">
         <paper-menu attr-for-selected="name" selected="{{subpage}}" role="navigation" class="drawer-list">
-          <a href="/dashboard-page/dashboard" name="root" tabindex="-1">
+          <a href="/dashboard-page/root" name="root" tabindex="-1">
             <paper-item>Dashboard Home</paper-item>
           </a>
-          <a href="/dashboard-page/pending-articles" name="article" tabindex="-1">
+          <a href="/dashboard-page/article" name="article" tabindex="-1">
             <paper-item>Pending Articles</paper-item>
           </a>
-          <a href="/dashboard-page/pending-open-data" name="open-data" tabindex="-1">
+          <a href="/dashboard-page/open-data" name="open-data" tabindex="-1">
             <paper-item>Pending Open Data Entries</paper-item>
           </a>
-          <a href="/dashboard-page/pending-members" name="members" tabindex="-1">
+          <a href="/dashboard-page/members" name="members" tabindex="-1">
             <paper-item>Member Requests</paper-item>
           </a>
         </paper-menu>
@@ -81,7 +81,26 @@
           role="main"
           selected="[[subpage]]"
           attr-for-selected="name">
-
+          <dashboard-root-component
+            name="root"
+            route="{{subroute}}"
+            roles="[[roles]]"
+            user="{{user}}"
+            scroll-target="[[scrollTarget]]">
+          </dashboard-root-component>
+          <dashboard-article-component
+            name="article"
+            route="{{subroute}}"
+            roles="[[roles]]"
+            user="{{user}}">
+          </dashboard-article-component>
+          <dashboard-open-data-component
+            name="open-data"
+            route="{{subroute}}"
+            roles="[[roles]]"
+            user="{{user}}"
+            query-params="{{queryParams}}">
+          </dashboard-open-data-component>
         </iron-pages>
       </div>
     </div>
@@ -94,14 +113,38 @@
       is: 'dashboard-page',
 
       properties: {
+        subpage: {
+          type: String,
+          reflectToAttribute: true,
+          observer: '_pageChanged'
+        },
+        pageId: {
+          type: String,
+          observer: '_checkIdExists'
+        },
         scrollTarget: {
+          type: Object
+        },
+        routeData: {
+          type: Object
+        },
+        subroute: {
+          type: Object
+        },
+        route: {
+          type: Object
+        },
+        queryParams: {
           type: Object
         }
       },
 
       behaviors: [
         Polymer.UserRoleBehavior,
-        Polymer.ArticleBehavior
+      ],
+
+      observers: [
+        '_routePageIdChanged(routeData.pageId)'
       ],
 
       _routePageIdChanged: function(id) {

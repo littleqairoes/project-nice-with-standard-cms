@@ -1,0 +1,183 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-query.html">
+
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+
+<link rel="import" href="../../bower_components/iron-scroll-threshold/iron-scroll-threshold.html">
+<link rel="import" href="../../bower_components/iron-list/iron-list.html">
+
+<link rel="import" href="../behaviors/open-data-behavior.html">
+<link rel="import" href="../behaviors/category-behavior.html">
+<link rel="import" href="../behaviors/user-role-behavior.html">
+
+<link rel="import" href="open-data-item-component.html">
+
+<script src="../../bower_components/underscore/underscore.js"></script>
+
+<dom-module id="dashboard-open-data-component">
+  <template>
+
+    <style is="custom-style" include="iron-flex iron-flex-alignment">
+      :host .title {
+        padding-left: 1em;
+        padding-right: 1em;
+      }
+
+      :host .title h1 {
+        font-size: 2em;
+      }
+
+      :host open-data-item-component {
+        position: relative !important;
+      }
+
+      :host .tile {
+        min-width: 120px;
+      }
+
+      :host .proper-tile {
+        margin: 5px;
+        padding: 10px;
+        padding-top: 20px;
+        width: 100px;
+        height: 130px;
+        text-align: center;
+      }
+
+      :host .tile img{
+        width: 50%;
+      }
+
+      :host .tile-anchor {
+        font-size: 0.8em;
+        text-decoration: none;
+        color: inherit;
+      }
+    </style>
+
+    <firebase-query
+      id="open-data-query"
+      path="[[openDataPath.options.draft]]"
+      data="{{openData}}"
+      order-by-child="[[child]]">
+    </firebase-query>
+
+    <firebase-query
+      id="category-ref"
+      path$="[[categoryPath.categories]]"
+      data="{{categories}}">
+    </firebase-query>
+
+    <div class="title">
+      <h1>Pending Open Data</h1>
+    </div>
+
+    <div class="horizontal layout wrap">
+      <template is="dom-repeat" items="{{categories}}">
+        <div class="flex tile">
+          <div class="horizontal layout">
+            <div class="flex">
+
+            </div>
+            <a href="?child={{item.$key}}" class="tile-anchor">
+              <paper-material class="proper-tile">
+
+                <img src="{{item.icon}}"><br/>
+                {{item.name}}
+
+              </paper-material>
+            </a>
+            <div class="flex">
+
+            </div>
+          </div>
+
+        </div>
+
+      </template>
+    </div>
+
+    <hr/>
+
+    <!--<iron-list id="list" items="[]" as="item" scroll-target="[[scrollTarget]]">-->
+    <template is="dom-repeat" items="{{openData}}">
+      <open-data-item-component
+        open-data-id$="{{item.$key}}"
+        publish-date$="{{item.value}}"
+        roles="[[roles]]"
+        user="{{user}}">
+      </open-data-item-component>
+    </template>
+    <!--</iron-list>-->
+
+    <!--<iron-scroll-threshold-->
+    <!--  id="scroller"-->
+    <!--  on-lower-trigger="loadMoreData"-->
+    <!--  lower-threshold="100"-->
+    <!--  scroll-target="[[scrollTarget]]">-->
+    <!--</iron-scroll-threshold>-->
+
+  </template>
+  <script>
+    Polymer({
+
+      is: 'dashboard-open-data-component',
+
+      properties: {
+        openData: {
+          type: Object
+        },
+        limit: {
+          type: Number
+        },
+        startLimit: {
+          type: Number,
+          value: 0
+        },
+        loadMore: {
+          type: Boolean
+        },
+        scrollTarget: {
+          type: Object
+        },
+        child: {
+          type: String,
+          value: 'value'
+        },
+        loadMore: {
+          type: Boolean
+        },
+        route: {
+          type: Object
+        },
+        routeData: {
+          type: Object
+        },
+        subroute: {
+          type: Object
+        },
+        // action: {
+        //   type: String
+        // }
+      },
+
+      behaviors: [
+        Polymer.OpenDataBehavior,
+        Polymer.CategoryBehavior,
+        Polymer.UserRoleBehavior
+      ],
+
+      observers: [
+        // 'addToList(openData.splices)',
+        '_routeActionChanged(queryParams)'
+      ],
+
+      _routeActionChanged: function(action) {
+        // console.log(action)
+        this.child = action.child || 'value';
+      },
+
+    });
+  </script>
+</dom-module>

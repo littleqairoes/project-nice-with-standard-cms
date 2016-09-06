@@ -14,7 +14,7 @@
 
 <script src="../../bower_components/underscore/underscore.js"></script>
 
-<dom-module id="draft-article-list-component">
+<dom-module id="dashboard-article-component">
   <template>
 
     <style>
@@ -30,22 +30,23 @@
       :host article-item-component {
         position: relative !important;
       }
+
+
     </style>
 
     <firebase-query
       id="article-query"
       path="[[articlePath.options.draft]]"
       data="{{articles}}"
-      order-by-child="[[child]]"
-      limit-to-last="[[limit]]">
+      order-by-child="[[child]]">
     </firebase-query>
 
     <div class="title">
       <h1>Pending Articles</h1>
     </div>
 
-    <iron-list id="list" items="[]" as="item" scroll-target="[[scrollTarget]]">
-      <template>
+    <!--<iron-list id="list" items="[]" as="item" scroll-target="[[scrollTarget]]">-->
+      <template is="dom-repeat" items="{{articles}}">
         <article-item-component
           article-id$="{{item.$key}}"
           publish-date$="{{item.value}}"
@@ -53,7 +54,7 @@
           user="{{user}}">
         </article-item-component>
       </template>
-    </iron-list>
+    <!--</iron-list>-->
 
     <iron-scroll-threshold
       id="scroller"
@@ -66,7 +67,7 @@
   <script>
     Polymer({
 
-      is: 'draft-article-list-component',
+      is: 'dashboard-article-component',
 
       properties: {
         articles: {
@@ -94,51 +95,7 @@
       behaviors: [
         Polymer.ArticleBehavior,
         Polymer.UserRoleBehavior
-      ],
-
-      observers: [
-        'addToList(articles.splices)'
-      ],
-
-      addToList: function(e) {
-        console.log(e);
-        // console.log(this.articles)
-        for (var i in this.articles) {
-          var flag = true;
-          for (var j in this.$.list.items) {
-            if (this.$.list.items[j].$key === this.articles[i].$key) {
-              flag = false;
-              break;
-            }
-          }
-          if (flag) {
-            this.$.list.splice('items', 0, 0, this.articles[i])
-          }
-        }
-
-        if (e && e.indexSplices && e.indexSplices[0]) {
-          var arr = e.indexSplices[0].removed;
-          for (var k in arr) {
-            var index = _.findIndex(this.$.list.items, {$key: arr[k].$key})
-            if (index >= 0) {
-              this.$.list.splice('items', index, 1);
-            }
-          }
-        }
-
-        this.$.list.items.sort(function(a, b){
-          return a.value < b.value;
-        })
-
-      },
-
-      ready: function() {
-        this.$.scroller.setup();
-      },
-
-      loadMoreData: function() {
-        this.limit = this.limit + 10;
-      }
+      ]
 
     });
   </script>

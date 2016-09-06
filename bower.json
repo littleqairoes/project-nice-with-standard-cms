@@ -39,7 +39,9 @@
     "underscore": "^1.8.3",
     "google-youtube": "^1.2.1",
     "paper-tooltip": "^1.1.2",
-    "oswald-googlefont": "*"
+    "oswald-googlefont": "*",
+    "google-analytics": "GoogleWebComponents/google-analytics#^1.2.2",
+    "google-signin": "GoogleWebComponents/google-signin#^1.3.6"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0"
